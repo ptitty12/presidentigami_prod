@@ -12,7 +12,7 @@ import sqlite3
 import pandas as pd
 from decimal import Decimal
 import json
-from flask import current_app
+import os
 # this will be how we interact with sql table
 
 def upload_to_sql(outcomes):
@@ -43,28 +43,15 @@ def upload_to_sql(outcomes):
         print("Data deleted and new data inserted successfully.")
 
 
-import sqlite3
-import pandas as pd
-from decimal import Decimal
-import json
-from flask import current_app
-import os
+
 
 
 def fetch_and_convert_data():
     """This gives us the core, processed outcomes df"""
-    try:
-        # Try to get the database path from the app config
-        database_path = current_app.config['DATABASE']
-    except KeyError:
-        # If DATABASE is not in config, use a default path
-        base_dir = os.path.abspath(os.path.dirname(__file__))
-        database_path = os.path.join(base_dir, '..', 'presidentigami.db')
 
-    print(f"Using database path: {database_path}")  # Debug print
 
     # Connect to SQLite database and read data
-    with sqlite3.connect(database_path) as conn:
+    with sqlite3.connect('presidentigami.db') as conn:
         df = pd.read_sql_query("SELECT * FROM outcomes", conn)
 
     # Convert JSON strings back to dictionaries/lists
@@ -81,14 +68,7 @@ def fetch_and_convert_data():
 def upload_odds_snapshot(recently_fetched_presidential_odds):
     recent_odds = recently_fetched_presidential_odds
     snapshot_time = datetime.now().isoformat()
-    try:
-    # Try to get the database path from the app config
-        database_path = current_app.config['DATABASE']
-    except KeyError:
-        # If DATABASE is not in config, use a default path
-        base_dir = os.path.abspath(os.path.dirname(__file__))
-        database_path = os.path.join(base_dir, '..', 'presidentigami.db')
-    with sqlite3.connect(database_path) as conn:
+    with sqlite3.connect('presidentigami.db') as conn:
         cursor = conn.cursor()
 
         # Insert into Historical_Odds table
