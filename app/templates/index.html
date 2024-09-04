@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elector-igami Probability</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            position: relative;
+        }
+        #outcomes-text {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        #twitter-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+        }
+        #twitter-icon:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Elector-igami Probability</h1>
+    <a href="https://x.com/patricktaylor05" target="_blank" id="twitter-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+    </a>
+    <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes</div>
+    <div id="gauge-chart"></div>
+
+    <script>
+        var chartJSON = {{ chart_json | safe }};
+        var finalValue = chartJSON.data[0].value;
+        var totalOutcomes = BigInt("72057594037927900");  // Use BigInt for precise large number handling
+
+        // Set initial value to 0
+        chartJSON.data[0].value = 0;
+        chartJSON.data[0].gauge.threshold.value = 0;
+
+        // Function to animate the outcomes count
+        function animateOutcomes(current) {
+            if (current <= totalOutcomes) {
+                document.getElementById('outcomes-count').textContent = current.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                setTimeout(() => animateOutcomes(current + totalOutcomes / 200n), 25);
+            }
+        }
+
+        // Start the outcomes animation
+        animateOutcomes(BigInt(0));
+
+        Plotly.newPlot('gauge-chart', chartJSON.data, chartJSON.layout).then(function() {
+            function animateGauge(value) {
+                if (value <= finalValue) {
+                    Plotly.animate('gauge-chart', {
+                        data: [{ value: value, gauge: { threshold: { value: value } } }],
+                        traces: [0],
+                        layout: {}
+                    }, {
+                        transition: { duration: 50 },
+                        frame: { duration: 50, redraw: false }
+                    });
+                    setTimeout(function() { animateGauge(value + 1); }, 50);
+                }
+            }
+
+            // Start the gauge animation
+            animateGauge(0);
+        });
+    </script>
+</body>
+</html>
