@@ -81,8 +81,14 @@ def fetch_and_convert_data():
 def upload_odds_snapshot(recently_fetched_presidential_odds):
     recent_odds = recently_fetched_presidential_odds
     snapshot_time = datetime.now().isoformat()
-
-    with sqlite3.connect(current_app.config['DATABASE']) as conn:
+    try:
+    # Try to get the database path from the app config
+        database_path = current_app.config['DATABASE']
+    except KeyError:
+        # If DATABASE is not in config, use a default path
+        base_dir = os.path.abspath(os.path.dirname(__file__))
+        database_path = os.path.join(base_dir, '..', 'presidentigami.db')
+    with sqlite3.connect(database_path) as conn:
         cursor = conn.cursor()
 
         # Insert into Historical_Odds table
