@@ -4,3 +4,4 @@ venv/
 .idea/
 presidentigami.db
 .idea/presidentigami.db
+gunicorn.log
