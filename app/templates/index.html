@@ -44,7 +44,9 @@
 
         // Set initial value to 0
         chartJSON.data[0].value = 0;
-        chartJSON.data[0].gauge.threshold.value = 0;
+        chartJSON.data[0].gauge.threshold.value = 0; //value is correct here
+
+
 
         // Function to animate the outcomes count
         function animateOutcomes(current) {
@@ -78,20 +80,39 @@
                 .catch(error => console.error('Error updating chart:', error));
         }
 
-        Plotly.newPlot('gauge-chart', chartJSON.data, chartJSON.layout).then(function() {
+        Plotly.newPlot('gauge-chart', chartJSON.data, {
+            ...chartJSON.layout,
+            datarevision: new Date().getTime(),  // Force the chart to re-render
+            gauge: {
+                axis: { visible: false },  // Hide the ticks if you don't want them
+            },
+            number: { valueformat: '.2f', suffix: '%' },  // Corrected suffix
+        }).then(function() {
             function animateGauge(value) {
+
+                // Set large increments if the value is far from the final value
+                let increment = (finalValue - value > 1) ? 0.37 : 0.01;  // Use 1 until the finalValue is close, then switch to 0.01
+
                 if (value <= finalValue) {
                     Plotly.animate('gauge-chart', {
-                        data: [{ value: value, gauge: { threshold: { value: value } } }],
+                        data: [{
+                            value: value,
+                            gauge: {
+                                threshold: { value: value },
+                            }
+                        }],
                         traces: [0],
                         layout: {}
                     }, {
-                        transition: { duration: 50 },
-                        frame: { duration: 50, redraw: false }
+                        transition: { duration: 0 },  // Instant transition between frames
+                        frame: { duration: 0, redraw: false }
                     });
-                    setTimeout(function() { animateGauge(value + 1); }, 50);
+
+                    // Increment by the chosen value and continue animation
+                    setTimeout(function() { animateGauge(value + increment); }, 0);
                 }
             }
+
 
             // Start the gauge animation
             animateGauge(0);

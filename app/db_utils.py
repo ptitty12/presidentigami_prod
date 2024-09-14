@@ -39,7 +39,7 @@ def upload_to_sql(outcomes):
 
 
 def fetch_and_convert_data():
-    """This gives us the core, processed outcomes df"""
+    """This gives us the core, processed outcomes df. Has each scenario and probability"""
 
 
     # Connect to SQLite database and read data
