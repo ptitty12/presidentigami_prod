@@ -1,5 +1,7 @@
 venv/
 *.pyc
-__pycache__/
+**pycache**/
 .idea/
 presidentigami.db
+.idea/presidentigami.db
+gunicorn.log
