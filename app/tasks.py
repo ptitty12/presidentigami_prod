@@ -4,11 +4,11 @@ import ast
 import json
 from decimal import Decimal
 from app.utils import generate_election_scenarios, check_in_historical_list
-from flask import current_app
 
 def update_data():
+    """This grabs the df that is most current via odds and states than generates the elections"""
     # Connect to SQLite database and read data
-    with sqlite3.connect(current_app.config['DATABASE']) as conn:
+    with sqlite3.connect('presidentigami.db') as conn:
         current_core = pd.read_sql_query("SELECT * FROM odds_and_votes", conn)
         historical_games = pd.read_sql_query("SELECT * FROM historical_results", conn)
 
@@ -26,7 +26,7 @@ def update_data():
     outcomes['Probability'] = outcomes['Probability'].astype(str)
 
     # Upload to SQLite database
-    with sqlite3.connect(current_app.config['DATABASE']) as conn:
+    with sqlite3.connect('presidentigami.db') as conn:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM outcomes;")
         outcomes.to_sql('outcomes', conn, if_exists='append', index=False)
@@ -37,3 +37,5 @@ def update_data():
     outcomes['Probability'] = outcomes['Probability'].apply(Decimal)
 
     return outcomes
+
+

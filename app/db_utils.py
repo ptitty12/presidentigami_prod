@@ -1,18 +1,10 @@
-import sqlite3
-import pandas as pd
+
 import ast
-from decimal import Decimal
-import sqlite3
-import pandas as pd
-import json
-from decimal import Decimal
-from flask import current_app
 from datetime import datetime
 import sqlite3
 import pandas as pd
 from decimal import Decimal
 import json
-import os
 # this will be how we interact with sql table
 
 def upload_to_sql(outcomes):
@@ -66,6 +58,7 @@ def fetch_and_convert_data():
 
 
 def upload_odds_snapshot(recently_fetched_presidential_odds):
+    """Upload snapshot of oddds"""
     recent_odds = recently_fetched_presidential_odds
     snapshot_time = datetime.now().isoformat()
     with sqlite3.connect('presidentigami.db') as conn:
@@ -80,4 +73,4 @@ def upload_odds_snapshot(recently_fetched_presidential_odds):
 
         conn.commit()
 
-    print("Data deleted and new data inserted successfully into Current_Odds and Historical_Odds.")
+    print("New data inserted successfully into Current_Odds and Historical_Odds.")
