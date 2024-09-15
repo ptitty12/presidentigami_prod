@@ -8,6 +8,14 @@
     <style>
         body {
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+        }
+        h1 {
+            text-align: center;
+            width: 100%;
         }
         #outcomes-text {
             text-align: center;
@@ -25,6 +33,40 @@
         #twitter-icon:hover {
             opacity: 0.8;
         }
+        #gauge-chart {
+            width: 100%;
+            max-width: 600px; /* Adjust this value as needed */
+            margin: 0 auto;
+        }
+
+        /* Flexbox container for images */
+        .map-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px; /* Increased top margin */
+            padding: 0 5%; /* Added horizontal padding */
+            max-width: 1200px;
+        }
+
+        /* Style for each image wrapper */
+        .map-wrapper {
+            width: 40%; /* Reduced from 45% to create more space between */
+            text-align: center;
+        }
+
+        /* Style for each image */
+        .map-image {
+            width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+
+        /* Style for image labels */
+        .map-label {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px; /* Increased bottom margin */
+        }
     </style>
 </head>
 <body>
@@ -37,6 +79,20 @@
     <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes</div>
     <div id="gauge-chart"></div>
 
+    <!-- Flex container for the two images with labels -->
+    <div class="map-container">
+        <!-- True map on the left -->
+        <div class="map-wrapper">
+            <div class="map-label">Most likely scorigami</div>
+            <img src="/map/true" alt="True Map" class="map-image">
+        </div>
+        <!-- False map on the right -->
+        <div class="map-wrapper">
+            <div class="map-label">Most likely non-scorigami</div>
+            <img src="/map/false" alt="False Map" class="map-image">
+        </div>
+    </div>
+
     <script>
         var chartJSON = {{ chart_json | safe }};
         var finalValue = chartJSON.data[0].value;
@@ -45,8 +101,6 @@
         // Set initial value to 0
         chartJSON.data[0].value = 0;
         chartJSON.data[0].gauge.threshold.value = 0; //value is correct here
-
-
 
         // Function to animate the outcomes count
         function animateOutcomes(current) {
@@ -86,10 +140,12 @@
             gauge: {
                 axis: { visible: false },  // Hide the ticks if you don't want them
             },
-            number: { valueformat: '.2f', suffix: '%' },  // Corrected suffix
+            number: { valueformat: '.2f', suffix: '%' },
+            width: 600,
+            height: 400,
+            margin: { t: 0, b: 0, l: 0, r: 0 }
         }).then(function() {
             function animateGauge(value) {
-
                 // Set large increments if the value is far from the final value
                 let increment = (finalValue - value > 1) ? 0.37 : 0.01;  // Use 1 until the finalValue is close, then switch to 0.01
 
@@ -112,7 +168,6 @@
                     setTimeout(function() { animateGauge(value + increment); }, 0);
                 }
             }
-
 
             // Start the gauge animation
             animateGauge(0);

@@ -37,6 +37,7 @@ def create_app():
     # Schedule the chart update task (every 10 minutes)
     scheduler.add_job(func=update_chart, trigger="interval", minutes=20)
 
+
     scheduler.start()
 
     # Import routes here to avoid circular imports
