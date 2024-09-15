@@ -3,24 +3,12 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.api.polymarket import update_presidential_odds_database
 from app.tasks import update_data, process_and_upload_historicals
-import threading
-import time
 
-import logging
 
-def initialize_database():
-    logging.info("Starting initial database processing...")
-    try:
-        process_and_upload_historicals()
-        logging.info("Initial database processing complete.")
-    except Exception as e:
-        logging.error(f"Error during initialization: {str(e)}")
-        # Consider whether to raise the exception or continue
+
 
 def create_app():
-    # Run the initialization in a separate thread
-    init_thread = threading.Thread(target=initialize_database)
-    init_thread.start()
+
 
     app = Flask(__name__)
 
@@ -39,7 +27,6 @@ def create_app():
             print("Chart updated")
 
     # Wait for the initialization to complete before setting up schedulers
-    init_thread.join()
 
     # Initialize the scheduler
     scheduler = BackgroundScheduler()
@@ -54,7 +41,7 @@ def create_app():
     scheduler.add_job(func=update_chart, trigger="interval", minutes=20)
 
     # Schedule process_and_upload_historicals to run once a day
-    scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)
+    #scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)
 
     scheduler.start()
 
