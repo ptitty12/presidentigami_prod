@@ -3,7 +3,12 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.api.polymarket import update_presidential_odds_database
 from app.tasks import update_data, process_and_upload_historicals
-
+import threading
+import time
+def initalize_database():
+    print("Starting to init db")
+    process_and_upload_historicals()
+    print("end init database")
 
 def create_app():
     app = Flask(__name__)
@@ -22,7 +27,6 @@ def create_app():
             route_update_chart()
             print("Chart updated")
 
-    process_and_upload_historicals()
     # Initialize the scheduler
     scheduler = BackgroundScheduler()
 
@@ -37,6 +41,8 @@ def create_app():
 
     # Schedule the chart update task (every 10 minutes)
     scheduler.add_job(func=update_chart, trigger="interval", minutes=20)
+
+    scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)
 
 
     scheduler.start()
