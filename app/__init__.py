@@ -6,10 +6,16 @@ from app.tasks import update_data, process_and_upload_historicals
 import threading
 import time
 
+import logging
+
 def initialize_database():
-    print("Starting initial database processing...")
-    process_and_upload_historicals()
-    print("Initial database processing complete.")
+    logging.info("Starting initial database processing...")
+    try:
+        process_and_upload_historicals()
+        logging.info("Initial database processing complete.")
+    except Exception as e:
+        logging.error(f"Error during initialization: {str(e)}")
+        # Consider whether to raise the exception or continue
 
 def create_app():
     # Run the initialization in a separate thread
