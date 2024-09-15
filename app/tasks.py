@@ -313,6 +313,6 @@ def process_and_upload_historicals():
             VALUES (?, ?)
         ''', (snapshot, current_percent))
 
-    # Step 3: Commit the transaction to save changes
-    conn.commit()
+        # Step 3: Commit the transaction to save changes
+        conn.commit()
     print("Calc'd Fields")
