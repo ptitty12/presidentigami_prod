@@ -1,5 +1,4 @@
 import sqlite3
-import pandas as pd
 import ast
 import json
 from decimal import Decimal
@@ -60,7 +59,7 @@ def update_data():
 
 
 def fetch_election_map(scorigami):
-    """Take in a dict which is the dict cell of the outcome of the eleciton and return a map"""
+    """Take in a dict which is the dict cell of the outcome of the election and return a map"""
     if scorigami == True:
         bolean_scorigami = False
     else:
@@ -264,7 +263,56 @@ def fetch_election_map(scorigami):
         return output_path
 
 
+def process_and_upload_historicals():
+    """Entering this right now--- modern --- takes in current odds and snapshots generate outcomes"""
+    # Connect to SQLite database
+    # Connect to SQLite database
+    conn = sqlite3.connect('presidentigami.db')
+    cursor = conn.cursor()
 
+    # Create the current_odds table if it doesn't exist
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS historical_percents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Snapshot TEXT,
+        Scorigami_Percent DECIMAL(12,6)
+    )
+    ''')
 
+    not_processed_yet = pd.read_sql_query("""SELECT r.Snapshot, r.Odds, r.State, v.Votes as Electoral_Votes
+                                        FROM historical_odds r
+                                        LEFT JOIN historical_percents l ON r.Snapshot = l.Snapshot
+                                        LEFT JOIN votes_per_state v ON r.State = v.State
+                                        WHERE l.Snapshot IS NULL;
+                                """, conn)
+    for snapshot in not_processed_yet['Snapshot'].unique():
+        temp_df = not_processed_yet[not_processed_yet['Snapshot'] == snapshot].copy()
+        historical_games = pd.read_sql_query("SELECT * FROM historical_results", conn)
 
+        temp_df['Current Favorite'] = temp_df['Odds'].apply(lambda x: 'Republican' if x >= 0.5 else 'Democrat')
+        historical_list = list(historical_games['Electoral_Votes'].apply(ast.literal_eval))
+        #print(temp_df)
+        # Generate election scenarios
+        outcomes = generate_election_scenarios(temp_df)
+        outcomes['Votes_List'] = outcomes.apply(
+            lambda row: sorted([row['Republican_Votes'], row['Democrat_Votes']], reverse=True), axis=1)
+        outcomes['Is_In_Historical'] = outcomes['Votes_List'].apply(
+            lambda x: check_in_historical_list(x, historical_list))
 
+        # Convert dictionaries and Decimal to strings
+        outcomes['Scenario'] = outcomes['Scenario'].apply(json.dumps)
+        outcomes['Votes_List'] = outcomes['Votes_List'].apply(json.dumps)
+
+        #outcomes['Probability'].fillna(0, inplace=True)
+        current_probability = float(outcomes[outcomes['Is_In_Historical'] == False]['Probability'].sum())
+        current_percent = current_probability * 100
+
+        # Step 2: Insert new data from the DataFrame
+        cursor.execute('''
+            INSERT INTO historical_percents (Snapshot, Scorigami_Percent)
+            VALUES (?, ?)
+        ''', (snapshot, current_percent))
+
+    # Step 3: Commit the transaction to save changes
+    conn.commit()
+    print("Calc'd Fields")

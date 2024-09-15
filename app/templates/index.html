@@ -33,10 +33,15 @@
         #twitter-icon:hover {
             opacity: 0.8;
         }
-        #gauge-chart {
+        #gauge-chart, #line-chart {
             width: 100%;
             max-width: 600px; /* Adjust this value as needed */
             margin: 0 auto;
+        }
+        #line-chart {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
         }
 
         /* Flexbox container for images */
@@ -79,7 +84,10 @@
     <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes</div>
     <div id="gauge-chart"></div>
 
+     <!-- Line chart container -->
+    <div id="line-chart"></div> <!-- New container for line chart -->
     <!-- Flex container for the two images with labels -->
+
     <div class="map-container">
         <!-- True map on the left -->
         <div class="map-wrapper">
@@ -95,6 +103,8 @@
 
     <script>
         var chartJSON = {{ chart_json | safe }};
+        var lineChartJSON = {{ line_chart_json | safe }};
+
         var finalValue = chartJSON.data[0].value;
         var totalOutcomes = BigInt("72057594037927900");  // Use BigInt for precise large number handling
 
@@ -172,9 +182,41 @@
             // Start the gauge animation
             animateGauge(0);
         });
+         // Create the line chart
+        Plotly.newPlot('line-chart', lineChartJSON.data, lineChartJSON.layout, lineChartJSON.config)
+            .then(function() {
+                console.log('Line chart created successfully');
+            })
+            .catch(function(err) {
+                console.error('Error creating line chart:', err);
+            });
 
+        function updateChart() {
+            fetch('/update_chart', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        return fetch('/');
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newChartJSON = JSON.parse(doc.getElementById('chart-data').textContent);
+
+                    // Update the gauge chart
+                    Plotly.react('gauge-chart', newChartJSON.data, newChartJSON.layout);
+
+                    // Update the line chart
+                    const newLineChartJSON = JSON.parse(doc.getElementById('line-chart-data').textContent);
+                    Plotly.react('line-chart', newLineChartJSON.data, newLineChartJSON.layout, newLineChartJSON.config);
+                })
+                .catch(error => console.error('Error updating charts:', error));
+        }
         // Update the chart every 10 minutes
         setInterval(updateChart, 600000);
+
     </script>
 </body>
 </html>

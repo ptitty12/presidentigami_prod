@@ -7,6 +7,7 @@ from decimal import Decimal
 import json
 # this will be how we interact with sql table
 
+
 def upload_to_sql(outcomes):
     with sqlite3.connect('presidentigami.db') as conn:
         cursor = conn.cursor()
@@ -74,3 +75,17 @@ def upload_odds_snapshot(recently_fetched_presidential_odds):
         conn.commit()
 
     print("New data inserted successfully into Current_Odds and Historical_Odds.")
+
+
+def fetch_and_convert_historicals():
+    """for line chart"""
+
+
+    # Connect to SQLite database and read data
+    with sqlite3.connect('presidentigami.db') as conn:
+        df = pd.read_sql_query("SELECT * FROM historical_percents", conn)
+
+    # Convert JSON strings back to dictionaries/lists
+    #df['Snapshot'] = df['Snapshot'].apply(Datetime)
+
+    return df

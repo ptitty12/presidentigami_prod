@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, jsonify
-from app.charts import create_gauge_chart
+from app.charts import create_gauge_chart, create_line_chart
 from flask import send_file, render_template, current_app as app
 import os
 from app.tasks import fetch_election_map
@@ -8,10 +8,14 @@ main = Blueprint('main', __name__)
 
 # Initialize the chart data
 latest_chart_json = create_gauge_chart()
-
+latest_line_chart_json = create_line_chart()
 @main.route('/')
 def index():
-    return render_template('index.html', chart_json=latest_chart_json)
+    gauge_chart_json = create_gauge_chart()
+    line_chart_json = create_line_chart()
+    print("Gauge Chart JSON:", gauge_chart_json)
+    print("Line Chart JSON:", line_chart_json)
+    return render_template('index.html', chart_json=gauge_chart_json, line_chart_json=line_chart_json)
 
 @main.route('/update_chart', methods=['POST'])
 def update_chart():

@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import plotly.utils
 import json
-from app.db_utils import fetch_and_convert_data
+from app.db_utils import fetch_and_convert_data, fetch_and_convert_historicals
 
 def create_gauge_chart():
     our_data = fetch_and_convert_data()
@@ -40,5 +40,45 @@ def create_gauge_chart():
 
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
+
+
+def create_line_chart():
+    df = fetch_and_convert_historicals()
+    # Create the line trace for Scorigami_Percent over time
+    line_trace = go.Scatter(
+        x=df['Snapshot'],  # Your timestamp or date column
+        y=df['Scorigami_Percent'],  # Your percentage column
+        mode='lines',  # 'lines' for a continuous line plot
+        line=dict(width=2),  # Adjust line thickness as needed
+        showlegend=False
+    )
+
+    layout = go.Layout(
+        margin=dict(l=40, r=20, t=30, b=40),  # Increased left and bottom margins
+        xaxis=dict(
+            title='',
+            showgrid=False,
+            showline=True,
+            showticklabels=True
+        ),
+        yaxis=dict(
+            title='Scorigami Percent',
+            showgrid=True,
+            showline=True,
+            showticklabels=True,
+            range=[0, 100]  # Set y-axis range from 0 to 100
+        ),
+        template='plotly_white',
+        dragmode=False,  # Disable drag mode
+        showlegend=False,  # Hide legend
+    )
+
+    config = {
+        'displayModeBar': False,  # Hide the mode bar with zoom options etc.
+        'scrollZoom': False,  # Disable scroll zoom
+    }
+
+    fig = go.Figure(data=[line_trace], layout=layout)
+    return json.dumps({'data': fig.data, 'layout': fig.layout, 'config': config}, cls=plotly.utils.PlotlyJSONEncoder)
 
 
