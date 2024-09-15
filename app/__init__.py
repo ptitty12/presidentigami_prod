@@ -5,12 +5,17 @@ from app.api.polymarket import update_presidential_odds_database
 from app.tasks import update_data, process_and_upload_historicals
 import threading
 import time
-def initalize_database():
-    print("Starting to init db")
+
+def initialize_database():
+    print("Starting initial database processing...")
     process_and_upload_historicals()
-    print("end init database")
+    print("Initial database processing complete.")
 
 def create_app():
+    # Run the initialization in a separate thread
+    init_thread = threading.Thread(target=initialize_database)
+    init_thread.start()
+
     app = Flask(__name__)
 
     # Get the path to the project root directory
@@ -27,23 +32,23 @@ def create_app():
             route_update_chart()
             print("Chart updated")
 
+    # Wait for the initialization to complete before setting up schedulers
+    init_thread.join()
+
     # Initialize the scheduler
     scheduler = BackgroundScheduler()
 
-
-
-    # Schedule the database update task (every 5 minutes)
+    # Schedule the database update task (every 15 minutes)
     scheduler.add_job(func=update_presidential_odds_database, trigger="interval", minutes=15)
 
+    # Schedule the data update task (every 17 minutes)
     scheduler.add_job(func=update_data, trigger="interval", minutes=17)
 
-
-
-    # Schedule the chart update task (every 10 minutes)
+    # Schedule the chart update task (every 20 minutes)
     scheduler.add_job(func=update_chart, trigger="interval", minutes=20)
 
+    # Schedule process_and_upload_historicals to run once a day
     scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)
-
 
     scheduler.start()
 
@@ -52,7 +57,6 @@ def create_app():
     app.register_blueprint(routes.main)
 
     return app
-
 
 # Create the app instance
 app = create_app()
