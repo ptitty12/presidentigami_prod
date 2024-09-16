@@ -66,7 +66,7 @@ def create_line_chart():
             showgrid=True,
             showline=True,
             showticklabels=True,
-            range=[0, 100]  # Set y-axis range from 0 to 100
+            range=[df['Scorigami_Percent'].min() - 1, df['Scorigami_Percent'].max() +1]  # Set y-axis range from 0 to 100
         ),
         template='plotly_white',
         dragmode=False,  # Disable drag mode

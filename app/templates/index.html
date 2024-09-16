@@ -7,75 +7,89 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
-            position: relative;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0 20px;
+            font-size: 16px;
         }
         h1 {
+            font-size: 1.5rem;
             text-align: center;
             width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
         }
         #outcomes-text {
             text-align: center;
-            font-size: 24px;
-            margin: 20px 0;
+            font-size: 1.2rem;
+            margin: 1rem 0;
             font-weight: bold;
         }
         #twitter-icon {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 32px;
-            height: 32px;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
         }
         #twitter-icon:hover {
             opacity: 0.8;
         }
         #gauge-chart, #line-chart {
             width: 100%;
-            max-width: 600px; /* Adjust this value as needed */
+            max-width: 100vw;
+            height: 50vh;
             margin: 0 auto;
         }
-        #line-chart {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-        }
-
-        /* Flexbox container for images */
         .map-container {
             display: flex;
-            justify-content: space-between;
-            margin-top: 40px; /* Increased top margin */
-            padding: 0 5%; /* Added horizontal padding */
-            max-width: 1200px;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 2rem;
+            padding: 0 1rem;
         }
-
-        /* Style for each image wrapper */
         .map-wrapper {
-            width: 40%; /* Reduced from 45% to create more space between */
-            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 2rem;
         }
-
-        /* Style for each image */
         .map-image {
             width: 100%;
             height: auto;
-            margin-top: 10px;
+        }
+        .map-label {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-align: center;
         }
 
-        /* Style for image labels */
-        .map-label {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px; /* Increased bottom margin */
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            #outcomes-text {
+                font-size: 1.5rem;
+            }
+            .map-container {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            .map-wrapper {
+                width: 45%;
+            }
+            .map-label {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1 style="text-align: center;">Presidential Election Electoral College-igami Probability</h1>
+    <h1>Presidential Election Electoral College-igami Probability</h1>
     <a href="https://x.com/patricktaylor05" target="_blank" id="twitter-icon">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -83,25 +97,20 @@
     </a>
     <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes.</div>
     <div id="gauge-chart"></div>
-
-     <!-- Line chart container -->
-    <div id="line-chart"></div> <!-- New container for line chart -->
-    <!-- Flex container for the two images with labels -->
+    <div id="line-chart"></div>
 
     <div class="map-container">
-        <!-- True map on the left -->
         <div class="map-wrapper">
             <div class="map-label">Most likely scorigami</div>
             <img src="/map/true" alt="True Map" class="map-image">
         </div>
-        <!-- False map on the right -->
         <div class="map-wrapper">
             <div class="map-label">Most likely non-scorigami</div>
             <img src="/map/false" alt="False Map" class="map-image">
         </div>
     </div>
 
-    <script>
+     <script>
         var chartJSON = {{ chart_json | safe }};
         var lineChartJSON = {{ line_chart_json | safe }};
 
@@ -123,26 +132,7 @@
         // Start the outcomes animation
         animateOutcomes(BigInt(0));
 
-        function updateChart() {
-            fetch('/update_chart', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Fetch the updated chart data
-                        return fetch('/');
-                    }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const newChartJSON = JSON.parse(doc.getElementById('chart-data').textContent);
-
-                    // Update the chart
-                    Plotly.react('gauge-chart', newChartJSON.data, newChartJSON.layout);
-                })
-                .catch(error => console.error('Error updating chart:', error));
-        }
+        var config = {responsive: true};
 
         Plotly.newPlot('gauge-chart', chartJSON.data, {
             ...chartJSON.layout,
@@ -151,10 +141,8 @@
                 axis: { visible: false },  // Hide the ticks if you don't want them
             },
             number: { valueformat: '.2f', suffix: '%' },
-            width: 600,
-            height: 400,
             margin: { t: 0, b: 0, l: 0, r: 0 }
-        }).then(function() {
+        }, config).then(function() {
             function animateGauge(value) {
                 // Set large increments if the value is far from the final value
                 let increment = (finalValue - value > 1) ? 0.37 : 0.01;  // Use 1 until the finalValue is close, then switch to 0.01
@@ -182,8 +170,9 @@
             // Start the gauge animation
             animateGauge(0);
         });
-         // Create the line chart
-        Plotly.newPlot('line-chart', lineChartJSON.data, lineChartJSON.layout, lineChartJSON.config)
+
+        // Create the line chart
+        Plotly.newPlot('line-chart', lineChartJSON.data, lineChartJSON.layout, config)
             .then(function() {
                 console.log('Line chart created successfully');
             })
@@ -206,17 +195,17 @@
                     const newChartJSON = JSON.parse(doc.getElementById('chart-data').textContent);
 
                     // Update the gauge chart
-                    Plotly.react('gauge-chart', newChartJSON.data, newChartJSON.layout);
+                    Plotly.react('gauge-chart', newChartJSON.data, newChartJSON.layout, config);
 
                     // Update the line chart
                     const newLineChartJSON = JSON.parse(doc.getElementById('line-chart-data').textContent);
-                    Plotly.react('line-chart', newLineChartJSON.data, newLineChartJSON.layout, newLineChartJSON.config);
+                    Plotly.react('line-chart', newLineChartJSON.data, newLineChartJSON.layout, config);
                 })
                 .catch(error => console.error('Error updating charts:', error));
         }
+
         // Update the chart every 10 minutes
         setInterval(updateChart, 600000);
-
     </script>
 </body>
 </html>
