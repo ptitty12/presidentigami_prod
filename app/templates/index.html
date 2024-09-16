@@ -23,8 +23,10 @@
             font-size: 16px;
             color: var(--text-color);
             background-color: var(--background-color);
-            background-image: radial-gradient(circle at 1px 1px, var(--secondary-color) 1px, transparent 0);
-            background-size: 40px 40px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+
+        }
         }
         .container {
             max-width: 1200px;
@@ -62,11 +64,10 @@
         }
         #gauge-chart, #line-chart {
             width: 100%;
-            height: 50vh;
-            margin: 2rem auto;
-            background-color: white;
+            height: 25vh;
+            max-width: 300px;
+            margin: 1rem auto;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: box-shadow 0.3s ease;
         }
         #gauge-chart:hover, #line-chart:hover {
@@ -181,7 +182,7 @@
 
     </div>
 
-     <script>
+    <script>
         var chartJSON = {{ chart_json | safe }};
         var lineChartJSON = {{ line_chart_json | safe }};
 
@@ -203,16 +204,24 @@
         // Start the outcomes animation
         animateOutcomes(BigInt(0));
 
-        var config = {responsive: true};
+        var config = {
+            responsive: true,
+            displayModeBar: false, // This removes the mode bar with zoom options etc.
+            staticPlot: true // This makes the chart non-interactive
+        };
 
         Plotly.newPlot('gauge-chart', chartJSON.data, {
             ...chartJSON.layout,
             datarevision: new Date().getTime(),  // Force the chart to re-render
             gauge: {
+                ...chartJSON.layout.gauge,  // Preserve any gauge settings from the server
                 axis: { visible: false },  // Hide the ticks if you don't want them
             },
             number: { valueformat: '.2f', suffix: '%' },
-            margin: { t: 0, b: 0, l: 0, r: 0 }
+            margin: { t: 0, b: 0, l: 0, r: 0 },
+            paper_bgcolor: 'rgba(0,0,0,0)',  // Ensure transparent background
+            plot_bgcolor: 'rgba(0,0,0,0)',   // Ensure transparent plot area
+            height: 300
         }, config).then(function() {
             function animateGauge(value) {
                 // Set large increments if the value is far from the final value
@@ -243,7 +252,12 @@
         });
 
         // Create the line chart
-        Plotly.newPlot('line-chart', lineChartJSON.data, lineChartJSON.layout, config)
+        Plotly.newPlot('line-chart', lineChartJSON.data, {
+            ...lineChartJSON.layout,
+            paper_bgcolor: 'rgba(0,0,0,0)',  // Ensure transparent background
+            plot_bgcolor: 'rgba(0,0,0,0)',   // Ensure transparent plot area
+            height: 250
+        }, config)
             .then(function() {
                 console.log('Line chart created successfully');
             })
@@ -266,11 +280,21 @@
                     const newChartJSON = JSON.parse(doc.getElementById('chart-data').textContent);
 
                     // Update the gauge chart
-                    Plotly.react('gauge-chart', newChartJSON.data, newChartJSON.layout, config);
+                    Plotly.react('gauge-chart', newChartJSON.data, {
+                        ...newChartJSON.layout,
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        height: 300
+                    }, config);
 
                     // Update the line chart
                     const newLineChartJSON = JSON.parse(doc.getElementById('line-chart-data').textContent);
-                    Plotly.react('line-chart', newLineChartJSON.data, newLineChartJSON.layout, config);
+                    Plotly.react('line-chart', newLineChartJSON.data, {
+                        ...newLineChartJSON.layout,
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        height: 250
+                    }, config);
                 })
                 .catch(error => console.error('Error updating charts:', error));
         }

@@ -36,6 +36,9 @@ def create_gauge_chart():
         margin=dict(l=20, r=20, t=40, b=20),
         autosize=True,
         height=500,
+        plot_bgcolor ='rgba(0,0,0,0)',
+        paper_bgcolor = 'rgba(0,0,0,0)',
+
     )
 
     return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
@@ -46,39 +49,48 @@ def create_line_chart():
     df = fetch_and_convert_historicals()
     # Create the line trace for Scorigami_Percent over time
     line_trace = go.Scatter(
-        x=df['Snapshot'],  # Your timestamp or date column
-        y=df['Scorigami_Percent'],  # Your percentage column
-        mode='lines',  # 'lines' for a continuous line plot
-        line=dict(width=2),  # Adjust line thickness as needed
+        x=df['Snapshot'],
+        y=df['Scorigami_Percent'],
+        mode='lines',
+        line=dict(width=2),
         showlegend=False
     )
 
     layout = go.Layout(
-        margin=dict(l=40, r=20, t=30, b=40),  # Increased left and bottom margins
+        margin=dict(l=40, r=20, t=30, b=40),
         xaxis=dict(
             title='',
             showgrid=False,
             showline=True,
-            showticklabels=True
+            showticklabels=True,
+            linecolor='#34495e',  # Set x-axis line color
+            tickfont=dict(color='#34495e')  # Set x-axis tick color
         ),
         yaxis=dict(
             title='Scorigami Percent',
             showgrid=True,
+            gridcolor='rgba(52, 73, 94, 0.1)',  # Light grid color
             showline=True,
             showticklabels=True,
-            range=[df['Scorigami_Percent'].min() - 1, df['Scorigami_Percent'].max() +1]  # Set y-axis range from 0 to 100
+            range=[df['Scorigami_Percent'].min() - 1, df['Scorigami_Percent'].max() + 1],
+            linecolor='#34495e',  # Set y-axis line color
+            tickfont=dict(color='#34495e')  # Set y-axis tick color
         ),
-        template='plotly_white',
-        dragmode=False,  # Disable drag mode
-        showlegend=False,  # Hide legend
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
+        plot_bgcolor='rgba(0,0,0,0)',  # Transparent plot area
+        dragmode=False,
+        showlegend=False,
     )
 
     config = {
-        'displayModeBar': False,  # Hide the mode bar with zoom options etc.
-        'scrollZoom': False,  # Disable scroll zoom
+        'displayModeBar': False,
+        'scrollZoom': False,
     }
 
     fig = go.Figure(data=[line_trace], layout=layout)
+    # At the end of both create_gauge_chart() and create_line_chart() functions:
+    print(json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder))
+
     return json.dumps({'data': fig.data, 'layout': fig.layout, 'config': config}, cls=plotly.utils.PlotlyJSONEncoder)
 
 
