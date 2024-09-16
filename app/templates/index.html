@@ -5,109 +5,180 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elector-igami Probability</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             font-size: 16px;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            background-image: radial-gradient(circle at 1px 1px, var(--secondary-color) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 2rem;
+            box-sizing: border-box;
         }
         h1 {
-            font-size: 1.5rem;
+            font-size: 2rem;
             text-align: center;
             width: 100%;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         #outcomes-text {
             text-align: center;
             font-size: 1.2rem;
             margin: 1rem 0;
             font-weight: bold;
+            color: var(--secondary-color);
         }
         #twitter-icon {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            width: 1.5rem;
-            height: 1.5rem;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            width: 2rem;
+            height: 2rem;
+            fill: var(--primary-color);
+            transition: transform 0.3s ease;
         }
         #twitter-icon:hover {
-            opacity: 0.8;
+            transform: scale(1.1);
         }
         #gauge-chart, #line-chart {
             width: 100%;
-            max-width: 100vw;
             height: 50vh;
-            margin: 0 auto;
+            margin: 2rem auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        #gauge-chart:hover, #line-chart:hover {
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         }
         .map-container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-wrap: wrap;
+            justify-content: space-around;
             width: 100%;
             margin-top: 2rem;
-            padding: 0 1rem;
         }
         .map-wrapper {
             width: 100%;
             max-width: 600px;
             margin-bottom: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .map-wrapper:hover {
+            transform: translateY(-5px);
         }
         .map-image {
             width: 100%;
             height: auto;
         }
         .map-label {
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: bold;
-            margin-bottom: 0.5rem;
+            margin: 1rem;
             text-align: center;
+            color: var(--primary-color);
+        }
+        .explanation {
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .explanation h2 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+        .explanation p {
+            line-height: 1.8;
+            margin-bottom: 1rem;
         }
 
         @media (min-width: 768px) {
             h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
             }
             #outcomes-text {
                 font-size: 1.5rem;
             }
-            .map-container {
-                flex-direction: row;
-                justify-content: space-around;
-            }
             .map-wrapper {
                 width: 45%;
             }
-            .map-label {
-                font-size: 1.2rem;
+            .explanation h2 {
+                font-size: 1.8rem;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Presidential Election Electoral College-igami Probability</h1>
-    <a href="https://x.com/patricktaylor05" target="_blank" id="twitter-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-    </a>
-    <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes.</div>
-    <div id="gauge-chart"></div>
-    <div id="line-chart"></div>
+    <div class="container">
+        <h1>Presidential Election Electoral College-igami Probability</h1>
+        <a href="https://x.com/patricktaylor05" target="_blank" id="twitter-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+        </a>
+        <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes.</div>
+        <div id="gauge-chart"></div>
+        <div id="line-chart"></div>
 
-    <div class="map-container">
-        <div class="map-wrapper">
-            <div class="map-label">Most likely scorigami</div>
-            <img src="/map/true" alt="True Map" class="map-image">
+        <div class="map-container">
+            <div class="map-wrapper">
+                <div class="map-label">Most likely scorigami</div>
+                <img src="/map/true" alt="True Map" class="map-image">
+            </div>
+            <div class="map-wrapper">
+                <div class="map-label">Most likely non-scorigami</div>
+                <img src="/map/false" alt="False Map" class="map-image">
+            </div>
         </div>
-        <div class="map-wrapper">
-            <div class="map-label">Most likely non-scorigami</div>
-            <img src="/map/false" alt="False Map" class="map-image">
-        </div>
+
+        <div class="explanation">
+        <h2>What is NFL Scorigami?</h2>
+        <p><strong>Scorigami</strong> refers to a unique final score in an NFL game that has never happened before in the league's history. The idea was popularized by Jon Bois, who created a project to track and predict new, never-before-seen NFL scores. Every time a game ends with a final score that has never occurred before in NFL history, it is called a "Scorigami."</p>
+        <p>For example, if a game finishes 29-18 and that exact score combination has never appeared in any prior NFL game, it would be considered a Scorigami. NFLScorigami.com tracks these scores in real time, adding a layer of excitement for fans as they observe rare combinations of points that have never occurred across over 100 years of NFL history.</p>
+
+        <h2>What is Electoral College-igami?</h2>
+        <p>In a similar vein to NFL Scorigami, <strong>Electoral College-igami</strong> applies the concept to the U.S. presidential election's electoral vote outcomes. In every U.S. election, a candidate must secure at least 270 electoral votes from the possible 538 to win. While many common vote combinations have occurred throughout U.S. history, there are still plenty of unique electoral outcomes that have yet to happen—these would be considered electoral Scorigamis.</p>
+        <p>Just like with NFL scores, where fans eagerly track never-before-seen results, the goal of presidentigami is to explore and track the possibility of an electoral college-igami.</p>
+
+        <h2>How Electoral Collegeigami Works</h2>
+        <ol>
+            <li><strong>Historical Data Collection</strong>: We gather the results of every U.S. presidential election since the Electoral College was established. Each election result is a pair of numbers representing how many electoral votes each candidate received.</li>
+            <li><strong>Simulating Electoral Outcomes</strong>: By leveraging the existing betting odds for electoral district winner, we simulate all possible election outcomes and quantify the likelihood of a scorigami outomces vs boring non-gami.</li>
+        </ol>
+    </div>
+
     </div>
 
      <script>
