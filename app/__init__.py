@@ -18,7 +18,6 @@ def create_app():
     # Set the database path
     app.config['DATABASE'] = os.path.join(basedir, 'presidentigami.db')
 
-    print(f"Database path set to: {app.config['DATABASE']}")  # Debug print
 
     def update_chart():
         with app.app_context():

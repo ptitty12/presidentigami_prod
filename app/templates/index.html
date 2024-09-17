@@ -24,9 +24,6 @@
             color: var(--text-color);
             background-color: var(--background-color);
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-
-
-        }
         }
         .container {
             max-width: 1200px;
@@ -62,16 +59,32 @@
         #twitter-icon:hover {
             transform: scale(1.1);
         }
-        #gauge-chart, #line-chart {
+        .chart-container {
+            position: relative;
             width: 100%;
-            height: 25vh;
             max-width: 300px;
+            height: 380px;
             margin: 1rem auto;
             border-radius: 8px;
             transition: box-shadow 0.3s ease;
         }
-        #gauge-chart:hover, #line-chart:hover {
+        .chart-container:hover {
             box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        #gauge-chart {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #line-chart {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            z-index: 10;
         }
         .map-container {
             display: flex;
@@ -149,9 +162,12 @@
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
         </a>
+        <div class="chart-container">
+            <div id="gauge-chart"></div>
+            <div id="line-chart"></div>
+        </div>
+
         <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes.</div>
-        <div id="gauge-chart"></div>
-        <div id="line-chart"></div>
 
         <div class="map-container">
             <div class="map-wrapper">
@@ -165,23 +181,21 @@
         </div>
 
         <div class="explanation">
-        <h2>What is NFL Scorigami?</h2>
-        <p><strong>Scorigami</strong> refers to a unique final score in an NFL game that has never happened before in the league's history. The idea was popularized by Jon Bois, who created a project to track and predict new, never-before-seen NFL scores. Every time a game ends with a final score that has never occurred before in NFL history, it is called a "Scorigami."</p>
-        <p>For example, if a game finishes 29-18 and that exact score combination has never appeared in any prior NFL game, it would be considered a Scorigami. NFLScorigami.com tracks these scores in real time, adding a layer of excitement for fans as they observe rare combinations of points that have never occurred across over 100 years of NFL history.</p>
+            <h2>What is NFL Scorigami?</h2>
+            <p><strong>Scorigami</strong> refers to a unique final score in an NFL game that has never happened before in the league's history. The idea was popularized by Jon Bois, who created a project to track and predict new, never-before-seen NFL scores. Every time a game ends with a final score that has never occurred before in NFL history, it is called a "Scorigami."</p>
+            <p>For example, if a game finishes 29-18 and that exact score combination has never appeared in any prior NFL game, it would be considered a Scorigami. NFLScorigami.com tracks these scores in real time, adding a layer of excitement for fans as they observe rare combinations of points that have never occurred across over 100 years of NFL history.</p>
 
-        <h2>What is Electoral College-igami?</h2>
-        <p>In a similar vein to NFL Scorigami, <strong>Electoral College-igami</strong> applies the concept to the U.S. presidential election's electoral vote outcomes. In every U.S. election, a candidate must secure at least 270 electoral votes from the possible 538 to win. While many common vote combinations have occurred throughout U.S. history, there are still plenty of unique electoral outcomes that have yet to happen—these would be considered electoral Scorigamis.</p>
-        <p>Just like with NFL scores, where fans eagerly track never-before-seen results, the goal of presidentigami is to explore and track the possibility of an electoral college-igami.</p>
+            <h2>What is Electoral College-igami?</h2>
+            <p>In a similar vein to NFL Scorigami, <strong>Electoral College-igami</strong> applies the concept to the U.S. presidential election's electoral vote outcomes. In every U.S. election, a candidate must secure at least 270 electoral votes from the possible 538 to win. While many common vote combinations have occurred throughout U.S. history, there are still plenty of unique electoral outcomes that have yet to happen—these would be considered electoral Scorigamis.</p>
+            <p>Just like with NFL scores, where fans eagerly track never-before-seen results, the goal of presidentigami is to explore and track the possibility of an electoral college-igami.</p>
 
-        <h2>How Electoral Collegeigami Works</h2>
-        <ol>
-            <li><strong>Historical Data Collection</strong>: We gather the results of every U.S. presidential election since the Electoral College was established. Each election result is a pair of numbers representing how many electoral votes each candidate received.</li>
-            <li><strong>Simulating Electoral Outcomes</strong>: By leveraging the existing betting odds for electoral district winner, we simulate all possible election outcomes and quantify the likelihood of a scorigami outomces vs boring non-gami.</li>
-        </ol>
+            <h2>How Electoral Collegeigami Works</h2>
+            <ol>
+                <li><strong>Historical Data Collection</strong>: We gather the results of every U.S. presidential election since the Electoral College was established. Each election result is a pair of numbers representing how many electoral votes each candidate received.</li>
+                <li><strong>Simulating Electoral Outcomes</strong>: By leveraging the existing betting odds for electoral district winner, we simulate all possible election outcomes and quantify the likelihood of a scorigami outomces vs boring non-gami.</li>
+            </ol>
+        </div>
     </div>
-
-    </div>
-
     <script>
         var chartJSON = {{ chart_json | safe }};
         var lineChartJSON = {{ line_chart_json | safe }};
@@ -210,6 +224,7 @@
             staticPlot: true // This makes the chart non-interactive
         };
 
+        // Create the gauge chart
         Plotly.newPlot('gauge-chart', chartJSON.data, {
             ...chartJSON.layout,
             datarevision: new Date().getTime(),  // Force the chart to re-render
@@ -218,10 +233,10 @@
                 axis: { visible: false },  // Hide the ticks if you don't want them
             },
             number: { valueformat: '.2f', suffix: '%' },
-            margin: { t: 0, b: 0, l: 0, r: 0 },
+            margin: { t: 0, b: 133, l: 0, r: 0 },  // Increase bottom margin to accommodate line chart
             paper_bgcolor: 'rgba(0,0,0,0)',  // Ensure transparent background
             plot_bgcolor: 'rgba(0,0,0,0)',   // Ensure transparent plot area
-            height: 300
+            height: 400  // Increase height to 400px
         }, config).then(function() {
             function animateGauge(value) {
                 // Set large increments if the value is far from the final value
@@ -256,7 +271,17 @@
             ...lineChartJSON.layout,
             paper_bgcolor: 'rgba(0,0,0,0)',  // Ensure transparent background
             plot_bgcolor: 'rgba(0,0,0,0)',   // Ensure transparent plot area
-            height: 250
+            height: 133,  // Set height to one-third of the total height
+            margin: { t: 0, b: 20, l: 40, r: 20 },  // Adjust margins as needed
+            xaxis: {
+                visible: false,
+                showgrid: false,
+                showticklabels: false  // Hide x-axis labels to save space
+            },
+            yaxis: {
+                visible: false,
+                showgrid: false,
+            }
         }, config)
             .then(function() {
                 console.log('Line chart created successfully');
@@ -284,7 +309,8 @@
                         ...newChartJSON.layout,
                         paper_bgcolor: 'rgba(0,0,0,0)',
                         plot_bgcolor: 'rgba(0,0,0,0)',
-                        height: 300
+                        height: 400,
+                        margin: { t: 0, b: 133, l: 0, r: 0 }
                     }, config);
 
                     // Update the line chart
@@ -293,7 +319,14 @@
                         ...newLineChartJSON.layout,
                         paper_bgcolor: 'rgba(0,0,0,0)',
                         plot_bgcolor: 'rgba(0,0,0,0)',
-                        height: 250
+                        height: 133,
+                        margin: { t: 0, b: 20, l: 40, r: 20 },
+                        xaxis: {
+                            showticklabels: false
+                        },
+                        yaxis: {
+                            title: ''
+                        }
                     }, config);
                 })
                 .catch(error => console.error('Error updating charts:', error));
@@ -302,5 +335,6 @@
         // Update the chart every 10 minutes
         setInterval(updateChart, 600000);
     </script>
+
 </body>
 </html>

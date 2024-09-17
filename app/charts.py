@@ -7,7 +7,6 @@ def create_gauge_chart():
     our_data = fetch_and_convert_data()
     current_probability = float(our_data[our_data['Is_In_Historical'] == False]['Probability'].sum())
     current_percent = current_probability * 100
-    print(current_percent)
     fig = go.Figure(go.Indicator(
         mode="gauge+number+delta",
         value=current_percent,
@@ -61,17 +60,17 @@ def create_line_chart():
         xaxis=dict(
             title='',
             showgrid=False,
-            showline=True,
-            showticklabels=True,
+            showline=False,
+            showticklabels=False,
             linecolor='#34495e',  # Set x-axis line color
             tickfont=dict(color='#34495e')  # Set x-axis tick color
         ),
         yaxis=dict(
-            title='Scorigami Percent',
-            showgrid=True,
+            title='%',
+            showgrid=False,
             gridcolor='rgba(52, 73, 94, 0.1)',  # Light grid color
-            showline=True,
-            showticklabels=True,
+            showline=False,
+            showticklabels=False,
             range=[df['Scorigami_Percent'].min() - 1, df['Scorigami_Percent'].max() + 1],
             linecolor='#34495e',  # Set y-axis line color
             tickfont=dict(color='#34495e')  # Set y-axis tick color
@@ -89,7 +88,6 @@ def create_line_chart():
 
     fig = go.Figure(data=[line_trace], layout=layout)
     # At the end of both create_gauge_chart() and create_line_chart() functions:
-    print(json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder))
 
     return json.dumps({'data': fig.data, 'layout': fig.layout, 'config': config}, cls=plotly.utils.PlotlyJSONEncoder)
 

@@ -13,8 +13,6 @@ latest_line_chart_json = create_line_chart()
 def index():
     gauge_chart_json = create_gauge_chart()
     line_chart_json = create_line_chart()
-    print("Gauge Chart JSON:", gauge_chart_json)
-    print("Line Chart JSON:", line_chart_json)
     return render_template('index.html', chart_json=gauge_chart_json, line_chart_json=line_chart_json)
 
 @main.route('/update_chart', methods=['POST'])

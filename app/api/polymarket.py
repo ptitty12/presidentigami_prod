@@ -56,7 +56,6 @@ def update_presidential_odds_database(limit=10000):
 
     # Fetch events
     events = get_all_events(limit)
-    print(f"Total events fetched: {len(events)}")
 
     # Process events
     state_events = {}

@@ -291,7 +291,6 @@ def process_and_upload_historicals():
 
         temp_df['Current Favorite'] = temp_df['Odds'].apply(lambda x: 'Republican' if x >= 0.5 else 'Democrat')
         historical_list = list(historical_games['Electoral_Votes'].apply(ast.literal_eval))
-        #print(temp_df)
         # Generate election scenarios
         outcomes = generate_election_scenarios(temp_df)
         outcomes['Votes_List'] = outcomes.apply(
