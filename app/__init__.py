@@ -8,9 +8,7 @@ from app.tasks import update_data, process_and_upload_historicals
 
 
 def create_app():
-
-
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='../static', static_url_path='/static')
 
     # Get the path to the project root directory
     basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
