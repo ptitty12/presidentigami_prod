@@ -33,12 +33,14 @@
             color: var(--text-color);
             background-color: var(--background-color);
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            overflow-x: hidden;
         }
         .container {
             max-width: 1200px;
             width: 100%;
             padding: 2rem;
             box-sizing: border-box;
+            overflow-x: hidden;
         }
         h1 {
             font-size: 2rem;
@@ -98,26 +100,33 @@
         .map-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-around;
+            justify-content: center;
             width: 100%;
             margin-top: 2rem;
         }
-        .map-wrapper {
+        .chart-map-pair {
             width: 100%;
             max-width: 600px;
             margin-bottom: 2rem;
+        }
+        .chart-wrapper, .map-wrapper {
+            width: 100%;
+            max-width: 100%;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             overflow: hidden;
             transition: transform 0.3s ease;
+            margin-bottom: 1rem;
         }
-        .map-wrapper:hover {
+        .chart-wrapper:hover, .map-wrapper:hover {
             transform: translateY(-5px);
         }
-        .map-image {
+        .chart-image, .map-image {
             width: 100%;
             height: auto;
+            max-width: 100%;
+            display: block;
         }
         .map-label {
             font-size: 1.2rem;
@@ -133,7 +142,7 @@
             padding: 2rem;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2); /* Updated vertical shadow */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
         .explanation h2 {
             color: var(--primary-color);
@@ -154,64 +163,27 @@
             #outcomes-text {
                 font-size: 1.5rem;
             }
-            .map-wrapper {
-                width: 45%;
-            }
             .explanation h2 {
                 font-size: 1.8rem;
             }
-        /* Updated and new styles for mobile optimization */
-        body {
-            overflow-x: hidden; /* Prevent horizontal scrolling */
-        }
-        .container {
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-        .map-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-            margin-top: 2rem;
-        }
-        .chart-map-pair {
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 2rem;
-        }
-        .chart-wrapper, .map-wrapper {
-            width: 100%;
-            max-width: 100%;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease;
-            margin-bottom: 1rem;
-        }
-        .chart-image, .map-image {
-            width: 100%;
-            height: auto;
-            max-width: 100%;
-            display: block; /* Prevent inline image gaps */
         }
 
-        /* Media query for larger screens */
         @media (min-width: 1200px) {
             .chart-map-pair {
                 width: 48%;
             }
         }
 
-        /* Additional mobile optimizations */
         @media (max-width: 768px) {
             .chart-wrapper, .map-wrapper {
                 margin-left: auto;
                 margin-right: auto;
             }
             .chart-image, .map-image {
-                max-width: 100vw; /* Ensure images don't exceed viewport width */
+                max-width: 100%;
+            }
+            .container {
+                padding: 1rem;
             }
         }
     </style>
