@@ -135,14 +135,21 @@
             text-align: center;
             color: var(--primary-color);
         }
+        .explanation-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            margin-top: 2rem;
+        }
         .explanation {
             width: 100%;
-            max-width: 800px;
-            margin: 2rem auto;
+            max-width: 600px;
+            margin: 2rem;
             padding: 2rem;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .explanation h2 {
             color: var(--primary-color);
@@ -173,6 +180,16 @@
                 width: 48%;
             }
         }
+        @media (min-width: 1200px) {
+            .chart-map-pair, .explanation {
+                width: 48%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .explanation {
+                padding: 1rem;
+            }
 
         @media (max-width: 768px) {
             .chart-wrapper, .map-wrapper {
@@ -224,21 +241,22 @@
                 </div>
             </div>
         </div>
+        <div class="explanation-container">
+            <div class="explanation">
+                <h2>What is NFL Scorigami?</h2>
+                <p><strong>Scorigami</strong> refers to a unique final score in an NFL game that has never happened before in the league's history. The idea was popularized by Jon Bois, who created a project to track and predict new, never-before-seen NFL scores. Every time a game ends with a final score that has never occurred before in NFL history, it is called a "Scorigami."</p>
+                <p>For example, if a game finishes 29-18 and that exact score combination has never appeared in any prior NFL game, it would be considered a Scorigami. NFLScorigami.com tracks these scores in real time, adding a layer of excitement for fans as they observe rare combinations of points that have never occurred across over 100 years of NFL history.</p>
 
-        <div class="explanation">
-            <h2>What is NFL Scorigami?</h2>
-            <p><strong>Scorigami</strong> refers to a unique final score in an NFL game that has never happened before in the league's history. The idea was popularized by Jon Bois, who created a project to track and predict new, never-before-seen NFL scores. Every time a game ends with a final score that has never occurred before in NFL history, it is called a "Scorigami."</p>
-            <p>For example, if a game finishes 29-18 and that exact score combination has never appeared in any prior NFL game, it would be considered a Scorigami. NFLScorigami.com tracks these scores in real time, adding a layer of excitement for fans as they observe rare combinations of points that have never occurred across over 100 years of NFL history.</p>
+                <h2>What is Electoral College-igami?</h2>
+                <p>In a similar vein to NFL Scorigami, <strong>Electoral College-igami</strong> applies the concept to the U.S. presidential election's electoral vote outcomes. In every U.S. election, a candidate must secure at least 270 electoral votes from the possible 538 to win. While many common vote combinations have occurred throughout U.S. history, there are still plenty of unique electoral outcomes that have yet to happen—these would be considered electoral Scorigamis.</p>
+                <p>Just like with NFL scores, where fans eagerly track never-before-seen results, the goal of presidentigami is to explore and track the possibility of an electoral college-igami.</p>
 
-            <h2>What is Electoral College-igami?</h2>
-            <p>In a similar vein to NFL Scorigami, <strong>Electoral College-igami</strong> applies the concept to the U.S. presidential election's electoral vote outcomes. In every U.S. election, a candidate must secure at least 270 electoral votes from the possible 538 to win. While many common vote combinations have occurred throughout U.S. history, there are still plenty of unique electoral outcomes that have yet to happen—these would be considered electoral Scorigamis.</p>
-            <p>Just like with NFL scores, where fans eagerly track never-before-seen results, the goal of presidentigami is to explore and track the possibility of an electoral college-igami.</p>
-
-            <h2>How Electoral Collegeigami Works</h2>
-            <ol>
-                <li><strong>Historical Data Collection</strong>: We gather the results of every U.S. presidential election since the Electoral College was established. Each election result is a pair of numbers representing how many electoral votes each candidate received.</li>
-                <li><strong>Simulating Electoral Outcomes</strong>: By leveraging the existing betting odds for electoral district winner, we simulate all possible election outcomes and quantify the likelihood of a scorigami outomces vs boring non-gami.</li>
-            </ol>
+                <h2>How Electoral Collegeigami Works</h2>
+                <ol>
+                    <li><strong>Historical Data Collection</strong>: We gather the results of every U.S. presidential election since the Electoral College was established. Each election result is a pair of numbers representing how many electoral votes each candidate received.</li>
+                    <li><strong>Simulating Electoral Outcomes</strong>: By leveraging the existing betting odds for electoral district winner, we simulate all possible election outcomes and quantify the likelihood of a scorigami outomces vs boring non-gami.</li>
+                </ol>
+            </div>
         </div>
     </div>
     <script>
