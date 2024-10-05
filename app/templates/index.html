@@ -133,7 +133,7 @@
             padding: 2rem;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2); /* Updated vertical shadow */
         }
         .explanation h2 {
             color: var(--primary-color);
@@ -160,6 +160,47 @@
             .explanation h2 {
                 font-size: 1.8rem;
             }
+        /* Updated styles for the chart and map containers */
+        .map-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 2rem;
+        }
+        .chart-map-pair {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+        .chart-wrapper, .map-wrapper {
+            width: 100%;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        .chart-wrapper:hover, .map-wrapper:hover {
+            transform: translateY(-5px);
+        }
+        .chart-image, .map-image {
+            width: 100%;
+            height: auto;
+        }
+        .chart-label, .map-label {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 1rem;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        @media (min-width: 1200px) {
+            .chart-map-pair {
+                width: 48%; /* Adjust as needed to allow for some space between */
+            }
         }
     </style>
 </head>
@@ -179,13 +220,24 @@
         <div id="outcomes-text">Based on <span id="outcomes-count">0</span> possible outcomes.</div>
 
         <div class="map-container">
-            <div class="map-wrapper">
-                <div class="map-label">Most likely scorigami</div>
-                <img src="/map/true" alt="True Map" class="map-image">
+            <div class="chart-map-pair">
+                <div class="chart-wrapper">
+                    <img src="/bar/true" alt="True Bar Chart" class="chart-image">
+                </div>
+                <div class="map-wrapper">
+                    <div class="map-label">Most likely scorigami</div>
+                    <img src="/map/true" alt="True Map" class="map-image">
+                </div>
             </div>
-            <div class="map-wrapper">
-                <div class="map-label">Most likely non-scorigami</div>
-                <img src="/map/false" alt="False Map" class="map-image">
+
+            <div class="chart-map-pair">
+                <div class="chart-wrapper">
+                    <img src="/bar/false" alt="False Bar Chart" class="chart-image">
+                </div>
+                <div class="map-wrapper">
+                    <div class="map-label">Most likely non-scorigami</div>
+                    <img src="/map/false" alt="False Map" class="map-image">
+                </div>
             </div>
         </div>
 

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify
 from app.charts import create_gauge_chart, create_line_chart
 from flask import send_file, render_template, current_app as app
 import os
-from app.tasks import fetch_election_map
+from app.tasks import fetch_election_map, fetch_election_bar
 
 main = Blueprint('main', __name__)
 
@@ -38,6 +38,30 @@ def update_election_map_true():
 @main.route('/map/false')
 def update_election_map_false():
     image_path = fetch_election_map(True)
+
+    # Navigate up one directory from the app root to reach the parent directory of 'static'
+    parent_dir = os.path.dirname(app.root_path)
+
+    # Join the parent directory with the image_path
+    full_image_path = os.path.join(parent_dir, image_path)
+
+    return send_file(full_image_path, mimetype='image/png')
+
+@main.route('/bar/true')
+def update_election_bar_true():
+    image_path = fetch_election_bar(False)
+
+    # Navigate up one directory from the app root to reach the parent directory of 'static'
+    parent_dir = os.path.dirname(app.root_path)
+
+    # Join the parent directory with the image_path
+    full_image_path = os.path.join(parent_dir, image_path)
+
+    return send_file(full_image_path, mimetype='image/png')
+
+@main.route('/bar/false')
+def update_election_bar_false():
+    image_path = fetch_election_bar(True)
 
     # Navigate up one directory from the app root to reach the parent directory of 'static'
     parent_dir = os.path.dirname(app.root_path)

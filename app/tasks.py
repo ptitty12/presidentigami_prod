@@ -55,7 +55,19 @@ def update_data():
     return outcomes
 
 
-
+def fetch_election_bar(scorigami):
+    """Take scorigami true or false and get us the bar chart path as .png"""
+    if scorigami == True:
+        bolean_scorigami = False
+    else:
+        bolean_scorigami = True
+    outcomes = fetch_and_convert_data()
+    outcomes = outcomes[outcomes['Is_In_Historical']== bolean_scorigami]
+    outcome_dict = outcomes.sort_values(by='Probability',ascending=False).iloc[0]
+    democrat_votes = outcome_dict['Democrat_Votes']
+    republican_votes = outcome_dict['Republican_Votes']
+    result_string = f"static/bars/D{democrat_votes}_R{republican_votes}.png"
+    return result_string
 
 
 def fetch_election_map(scorigami):
