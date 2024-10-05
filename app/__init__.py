@@ -7,6 +7,7 @@ from app.tasks import update_data, process_and_upload_historicals
 
 
 
+
 def create_app():
     app = Flask(__name__, static_folder='../static', static_url_path='/static')
 
@@ -29,13 +30,13 @@ def create_app():
     scheduler = BackgroundScheduler()
 
     # Schedule the database update task (every 15 minutes)
-    scheduler.add_job(func=update_presidential_odds_database, trigger="interval", minutes=15)
+    scheduler.add_job(func=update_presidential_odds_database, trigger="interval", minutes=30)
 
     # Schedule the data update task (every 17 minutes)
-    scheduler.add_job(func=update_data, trigger="interval", minutes=17)
+    scheduler.add_job(func=update_data, trigger="interval", minutes=35)
 
     # Schedule the chart update task (every 20 minutes)
-    scheduler.add_job(func=update_chart, trigger="interval", minutes=20)
+    scheduler.add_job(func=update_chart, trigger="interval", minutes=40)
 
     # Schedule process_and_upload_historicals to run once a day
     #scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)

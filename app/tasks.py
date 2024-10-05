@@ -266,7 +266,6 @@ def fetch_election_map(scorigami):
 def process_and_upload_historicals():
     """Entering this right now--- modern --- takes in current odds and snapshots generate outcomes"""
     # Connect to SQLite database
-    # Connect to SQLite database
     conn = sqlite3.connect('presidentigami.db')
     cursor = conn.cursor()
 

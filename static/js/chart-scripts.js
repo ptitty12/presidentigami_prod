@@ -1,6 +1,5 @@
 // chart-scripts.js
 
-
 var finalValue = chartJSON.data[0].value;
 var totalOutcomes = BigInt("72057594037927900");  // Use BigInt for precise large number handling
 
@@ -66,18 +65,39 @@ function animateGauge(value) {
     }
 }
 
+// Function to modify the line chart layout
+function modifyLineChartLayout(layout) {
+    if (layout.xaxis && layout.xaxis.tickvals && layout.xaxis.tickvals.length > 1) {
+        layout.xaxis.tickmode = 'array';
+        layout.xaxis.tickvals = [layout.xaxis.tickvals[0], layout.xaxis.tickvals[layout.xaxis.tickvals.length - 1]];
+
+        // Convert dates to month abbreviations
+        layout.xaxis.ticktext = layout.xaxis.ticktext.map(date => {
+            const monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const dateObj = new Date(date);
+            return monthAbbreviations[dateObj.getMonth()];
+        });
+
+        layout.xaxis.showticklabels = true;
+        layout.xaxis.showline = true;
+    }
+    return layout;
+}
+
 // Create the line chart
 function createLineChart() {
+    // Modify the layout to show only start and end dates
+    let modifiedLayout = modifyLineChartLayout(lineChartJSON.layout);
+
     Plotly.newPlot('line-chart', lineChartJSON.data, {
-        ...lineChartJSON.layout,
+        ...modifiedLayout,
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         height: 133,
         margin: { t: 0, b: 20, l: 40, r: 20 },
         xaxis: {
-            visible: false,
+            ...modifiedLayout.xaxis,
             showgrid: false,
-            showticklabels: false
         },
         yaxis: {
             visible: false,
@@ -117,17 +137,20 @@ function updateChart() {
 
             // Update the line chart
             const newLineChartJSON = JSON.parse(doc.getElementById('line-chart-data').textContent);
+            let modifiedLayout = modifyLineChartLayout(newLineChartJSON.layout);
             Plotly.react('line-chart', newLineChartJSON.data, {
-                ...newLineChartJSON.layout,
+                ...modifiedLayout,
                 paper_bgcolor: 'rgba(0,0,0,0)',
                 plot_bgcolor: 'rgba(0,0,0,0)',
                 height: 133,
                 margin: { t: 0, b: 20, l: 40, r: 20 },
                 xaxis: {
-                    showticklabels: false
+                    ...modifiedLayout.xaxis,
+                    showgrid: false,
                 },
                 yaxis: {
-                    title: ''
+                    visible: false,
+                    showgrid: false,
                 }
             }, config);
         })

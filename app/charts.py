@@ -60,10 +60,13 @@ def create_line_chart():
         xaxis=dict(
             title='',
             showgrid=False,
-            showline=False,
-            showticklabels=False,
+            showline=True,
+            showticklabels=True,
             linecolor='#34495e',  # Set x-axis line color
-            tickfont=dict(color='#34495e')  # Set x-axis tick color
+            tickfont=dict(color='#34495e'),  # Set x-axis tick color
+            tickmode='array',
+            tickvals=[df['Snapshot'].iloc[0], df['Snapshot'].iloc[-1]],
+            ticktext=[df['Snapshot'].iloc[0], df['Snapshot'].iloc[-1]]
         ),
         yaxis=dict(
             title='%',
@@ -87,7 +90,6 @@ def create_line_chart():
     }
 
     fig = go.Figure(data=[line_trace], layout=layout)
-    # At the end of both create_gauge_chart() and create_line_chart() functions:
 
     return json.dumps({'data': fig.data, 'layout': fig.layout, 'config': config}, cls=plotly.utils.PlotlyJSONEncoder)
 
