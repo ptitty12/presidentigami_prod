@@ -6,3 +6,4 @@ presidentigami.db
 .idea/presidentigami.db
 gunicorn.log
 /static/maps/
+/static/bars/
