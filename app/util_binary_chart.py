@@ -151,7 +151,7 @@ for _, row in outcome_df.iterrows():
 # Update layout
 fig.update_layout(
     width=880,  # Increased from 800 to 880 (10% larger)
-    height=880,  # Increased from 800 to 880 (10% larger)
+    height=750,  # Increased from 800 to 880 (10% larger)
     showlegend=False,
     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
@@ -181,7 +181,7 @@ os.makedirs(static_dir, exist_ok=True)
 file_path = os.path.join(static_dir, 'electoral_outcomes_grid.html')
 
 config = {'displayModeBar': False, 'showTips': False}
-fig.write_html(file_path, include_plotlyjs=True, full_html=False, config=config)
+fig.write_html(r"C:\Users\Patrick Taylor\PycharmProjects\Presidentigami_web\static\electoral_outcomes_grid.html", include_plotlyjs=True, full_html=False, config=config)
 
 print(f"File saved successfully at: {file_path}")
 
