@@ -130,10 +130,25 @@
             max-width: 100%;
             display: block;
         }
+        .electoral-grid-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 2rem auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .electoral-grid-container iframe {
+            width: 100%;
+            height: 880px;
+            border: none;
+        }
         .section-title {
             font-size: 1.2rem;
             font-weight: bold;
             margin: 1rem 0;
+            margin-top: 2rem;
             text-align: center;
             color: var(--primary-color);
             background-color: rgba(255, 255, 255, 0.7);
@@ -166,7 +181,7 @@
         .explanation p {
             line-height: 1.8;
             margin-bottom: 1rem;
-        }
+        } *// start here
 
         @media (min-width: 768px) {
             h1 {
@@ -183,6 +198,20 @@
         @media (min-width: 1200px) {
             .chart-map-pair, .explanation {
                 width: 48%;
+            }
+            .map-container {
+                justify-content: space-between;
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .chart-map-pair {
+                width: 100%;
+                max-width: 600px;
+                margin-bottom: 3rem;  /* Increased spacing between pairs */
+            }
+            .map-container {
+                justify-content: center;
             }
         }
 
@@ -201,6 +230,8 @@
                 padding: 1rem;
             }
         }
+
+
     </style>
 </head>
 <body>
@@ -239,7 +270,10 @@
                 </div>
             </div>
         </div>
-
+        <div class="electoral-grid-container">
+            <div class="section-title">Electoral Outcomes Grid</div>
+            <iframe src="{{ url_for('static', filename='electoral_outcomes_grid.html') }}" scrolling="no"></iframe>
+        </div>
         <div class="explanation-container">
             <div class="explanation">
                 <h2>What is NFL Scorigami?</h2>
