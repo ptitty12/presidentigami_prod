@@ -114,7 +114,7 @@ for _, row in outcome_df.iterrows():
         hover_text = "This outcome is not possible with the current electoral college"
     elif color == 'orange':
         hover_text = (
-            f"This result is not currently possible though did occur prior to the 2000 Electoral College change<br>"
+            f"This result is not currently possible<br>though did occur prior<br> to the 2000 Electoral College change<br>"
             f"Times Occurred: {times_occurred}<br>"
             f"Last Occurrence: {last_occurrence}")
     else:
@@ -133,7 +133,10 @@ for _, row in outcome_df.iterrows():
         mode='lines',
         hoverinfo='text',
         text=hover_text,
-        showlegend=False
+        showlegend=False,
+        hoverlabel=dict(
+            font=dict(size=12 if color == 'orange' else 14)  # 2 points smaller for orange
+        ),
     ))
 
     # Add text labels
@@ -148,16 +151,15 @@ for _, row in outcome_df.iterrows():
         )
     )
 
-# Update layout
 fig.update_layout(
-    width=880,  # Increased from 800 to 880 (10% larger)
-    height=750,  # Increased from 800 to 880 (10% larger)
+    width=880,
+    height=750,
     showlegend=False,
     xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
     yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
     plot_bgcolor='rgba(0,0,0,0)',
-    paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
-    margin=dict(l=0, r=0, t=0, b=0),  # Remove margins
+    paper_bgcolor='rgba(0,0,0,0)',
+    margin=dict(l=0, r=0, t=0, b=0),
 )
 
 fig.update_layout(
@@ -168,20 +170,61 @@ fig.update_layout(
     ],
     dragmode=False
 )
-# I can't figure this shit out we just doing it manually
-# Save the figure as a static HTML file
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_dir = os.path.dirname(os.path.dirname(current_dir))
-static_dir = os.path.join(project_dir, 'static')
 
-# Ensure the static directory exists
-os.makedirs(static_dir, exist_ok=True)
-
-# Define the file path
-file_path = os.path.join(static_dir, 'electoral_outcomes_grid.html')
-
+# Generate the plot HTML
 config = {'displayModeBar': False, 'showTips': False}
-fig.write_html(r"C:\Users\Patrick Taylor\PycharmProjects\Presidentigami_web\static\electoral_outcomes_grid.html", include_plotlyjs=True, full_html=False, config=config)
+plot_html = fig.to_html(include_plotlyjs=True, full_html=False, config=config)
+
+# Create the full HTML content with responsive tooltip logic
+html_content = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electoral Outcomes Grid</title>
+    <style>
+        body {{ margin: 0; padding: 0; }}
+        #plotly-div {{ width: 100%; height: 100%; }}
+    </style>
+</head>
+<body>
+    <div id="plotly-div">
+        {plot_html}
+    </div>
+    <script>
+        function adjustTooltipSize() {{
+            var tooltips = document.querySelectorAll('.hoverlayer .hovertext');
+            var screenWidth = window.innerWidth;
+
+            tooltips.forEach(function(tooltip) {{
+                if (screenWidth <= 768) {{  // Mobile devices
+                    tooltip.style.fontSize = '10px';  // Smaller font size for mobile
+                    tooltip.style.width = '150px';   // Narrower width for mobile
+                }} else {{
+                    tooltip.style.fontSize = '14px';  // Default font size for larger screens
+                    tooltip.style.width = 'auto';    // Default width for larger screens
+                }}
+            }});
+        }}
+
+        // Run on page load
+        window.addEventListener('load', adjustTooltipSize);
+
+        // Run on window resize
+        window.addEventListener('resize', adjustTooltipSize);
+
+        // Run periodically to catch any dynamically created tooltips
+        setInterval(adjustTooltipSize, 1000);
+    </script>
+</body>
+</html>
+"""
+
+# Save the full HTML content to a file
+file_path = r"C:\Users\Patrick Taylor\PycharmProjects\Presidentigami_web\static\electoral_outcomes_grid.html"
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(html_content)
 
 print(f"File saved successfully at: {file_path}")
 
