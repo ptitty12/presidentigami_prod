@@ -39,7 +39,7 @@ def create_app():
     scheduler.add_job(func=update_chart, trigger="interval", minutes=40)
 
     # Schedule process_and_upload_historicals to run once a day
-    #scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)
+    scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)
 
     scheduler.start()
 
