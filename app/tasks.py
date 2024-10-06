@@ -18,6 +18,7 @@ import time
 from PIL import Image
 import os
 import hashlib
+import logging
 
 
 
@@ -274,55 +275,79 @@ def fetch_election_map(scorigami):
 
         return output_path
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def process_and_upload_historicals():
-    """Entering this right now--- modern --- takes in current odds and snapshots generate outcomes"""
-    # Connect to SQLite database
-    conn = sqlite3.connect('presidentigami.db')
-    cursor = conn.cursor()
+    """Processes current odds and snapshots to generate and upload historical outcomes."""
+    try:
+        # Connect to SQLite database with a timeout to handle locked database scenarios
+        with sqlite3.connect('presidentigami.db', timeout=10) as conn:
+            cursor = conn.cursor()
 
-    # Create the current_odds table if it doesn't exist
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS historical_percents (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        Snapshot TEXT,
-        Scorigami_Percent DECIMAL(12,6)
-    )
-    ''')
+            # Create the historical_percents table if it doesn't exist
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS historical_percents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Snapshot TEXT UNIQUE,
+                    Scorigami_Percent DECIMAL(12,6)
+                )
+            ''')
 
-    not_processed_yet = pd.read_sql_query("""SELECT r.Snapshot, r.Odds, r.State, v.Votes as Electoral_Votes
-                                        FROM historical_odds r
-                                        LEFT JOIN historical_percents l ON r.Snapshot = l.Snapshot
-                                        LEFT JOIN votes_per_state v ON r.State = v.State
-                                        WHERE l.Snapshot IS NULL;
-                                """, conn)
-    for snapshot in not_processed_yet['Snapshot'].unique():
-        temp_df = not_processed_yet[not_processed_yet['Snapshot'] == snapshot].copy()
-        historical_games = pd.read_sql_query("SELECT * FROM historical_results", conn)
+            # Fetch records that haven't been processed yet
+            not_processed_yet = pd.read_sql_query("""
+                SELECT r.Snapshot, r.Odds, r.State, v.Votes as Electoral_Votes
+                FROM historical_odds r
+                LEFT JOIN historical_percents l ON r.Snapshot = l.Snapshot
+                LEFT JOIN votes_per_state v ON r.State = v.State
+                WHERE l.Snapshot IS NULL;
+            """, conn)
 
-        temp_df['Current Favorite'] = temp_df['Odds'].apply(lambda x: 'Republican' if x >= 0.5 else 'Democrat')
-        historical_list = list(historical_games['Electoral_Votes'].apply(ast.literal_eval))
-        # Generate election scenarios
-        outcomes = generate_election_scenarios(temp_df)
-        outcomes['Votes_List'] = outcomes.apply(
-            lambda row: sorted([row['Republican_Votes'], row['Democrat_Votes']], reverse=True), axis=1)
-        outcomes['Is_In_Historical'] = outcomes['Votes_List'].apply(
-            lambda x: check_in_historical_list(x, historical_list))
+            if not not_processed_yet.empty:
+                historical_games = pd.read_sql_query("SELECT * FROM historical_results", conn)
+                historical_list = list(historical_games['Electoral_Votes'].apply(ast.literal_eval))
 
-        # Convert dictionaries and Decimal to strings
-        outcomes['Scenario'] = outcomes['Scenario'].apply(json.dumps)
-        outcomes['Votes_List'] = outcomes['Votes_List'].apply(json.dumps)
+                for snapshot in not_processed_yet['Snapshot'].unique():
+                    temp_df = not_processed_yet[not_processed_yet['Snapshot'] == snapshot].copy()
 
-        #outcomes['Probability'].fillna(0, inplace=True)
-        current_probability = float(outcomes[outcomes['Is_In_Historical'] == False]['Probability'].sum())
-        current_percent = current_probability * 100
+                    # Determine the current favorite based on Odds
+                    temp_df['Current Favorite'] = temp_df['Odds'].apply(
+                        lambda x: 'Republican' if x >= 0.5 else 'Democrat')
 
-        # Step 2: Insert new data from the DataFrame
-        cursor.execute('''
-            INSERT INTO historical_percents (Snapshot, Scorigami_Percent)
-            VALUES (?, ?)
-        ''', (snapshot, current_percent))
+                    # Generate election scenarios
+                    outcomes = generate_election_scenarios(temp_df)
+                    outcomes['Votes_List'] = outcomes.apply(
+                        lambda row: sorted([row['Republican_Votes'], row['Democrat_Votes']], reverse=True), axis=1)
+                    outcomes['Is_In_Historical'] = outcomes['Votes_List'].apply(
+                        lambda x: check_in_historical_list(x, historical_list))
 
-        # Step 3: Commit the transaction to save changes
-        conn.commit()
-    print("Calc'd Fields")
+                    # Convert dictionaries and Decimal to strings
+                    outcomes['Scenario'] = outcomes['Scenario'].apply(json.dumps)
+                    outcomes['Votes_List'] = outcomes['Votes_List'].apply(json.dumps)
+
+                    # Calculate the current percentage
+                    current_probability = float(outcomes[outcomes['Is_In_Historical'] == False]['Probability'].sum())
+                    current_percent = current_probability * 100
+
+                    # Insert new data into historical_percents
+                    cursor.execute('''
+                        INSERT INTO historical_percents (Snapshot, Scorigami_Percent)
+                        VALUES (?, ?)
+                    ''', (snapshot, current_percent))
+
+                    # Commit after each snapshot
+                    conn.commit()
+
+                logging.info("Calculated and uploaded historical percentages successfully.")
+            else:
+                logging.info("No new snapshots to process.")
+
+    except sqlite3.OperationalError as e:
+        if 'database is locked' in str(e).lower():
+            logging.error("Database is locked. Exiting the function gracefully.")
+            return  # Exit the function without continuing
+        else:
+            logging.exception("An unexpected SQLite operational error occurred.")
+            raise  # Re-raise the exception for any other OperationalError
+    except Exception as e:
+        logging.exception("An unexpected error occurred during processing.")
+        raise  # Re-raise the exception for any other unexpected errors

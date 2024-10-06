@@ -143,6 +143,7 @@
             width: 100%;
             height: 880px;
             border: none;
+            overflow: auto;
         }
         .section-title {
             font-size: 1.2rem;
@@ -229,6 +230,10 @@
             .explanation {
                 padding: 1rem;
             }
+            .electoral-grid-container iframe {
+                max-height: 500px; /* Adjust the max height for mobile */
+                overflow: auto;    /* This will add scrolling on smaller devices if needed */
+            }
         }
 
 
@@ -272,7 +277,7 @@
         </div>
         <div class="electoral-grid-container">
             <div class="section-title">Electoral Outcomes Grid</div>
-            <iframe src="{{ url_for('static', filename='electoral_outcomes_grid.html') }}" scrolling="no"></iframe>
+            <iframe src="{{ url_for('static', filename='electoral_outcomes_grid.html') }}" scrolling="no" style="width:100%; height:880px; border:none;"></iframe>
         </div>
         <div class="explanation-container">
             <div class="explanation">
