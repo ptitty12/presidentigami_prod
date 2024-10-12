@@ -7,4 +7,4 @@ presidentigami.db
 gunicorn.log
 /static/maps/
 /static/bars/
-static/electoral_outcomes_grid.html
+/static/electoral_outcomes_grid.html
