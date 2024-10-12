@@ -26,6 +26,7 @@ var config = {
 
 // Create the gauge chart
 function createGaugeChart() {
+    console.log("Creating gauge chart with data:", chartJSON);
     Plotly.newPlot('gauge-chart', chartJSON.data, {
         ...chartJSON.layout,
         datarevision: new Date().getTime(),
@@ -86,6 +87,7 @@ function modifyLineChartLayout(layout) {
 
 // Create the line chart
 function createLineChart() {
+    console.log("Creating line chart with data:", lineChartJSON);
     // Modify the layout to show only start and end dates
     let modifiedLayout = modifyLineChartLayout(lineChartJSON.layout);
 
@@ -167,4 +169,85 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.error('Chart data is not available');
     }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.prev-button, .next-button');
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.dataset.type;
+            const direction = this.classList.contains('next-button') ? 1 : -1;
+            updateImages(type, direction);
+        });
+    });
+});
+
+// Debounce function to prevent rapid firing of events
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Keep track of the current index for each type
+const currentIndices = {
+    'scorigami': 0,
+    'non-scorigami': 0
+};
+
+function updateImages(type, direction) {
+    const chartImg = document.querySelector(`.chart-image[src^="/bar/${type}"]`);
+    const mapImg = document.querySelector(`.map-image[src^="/map/${type}"]`);
+    const titleElement = document.querySelector(`.chart-map-pair:has(.chart-image[src^="/bar/${type}"]) .section-title`);
+    
+    if (chartImg && mapImg) {
+        const newIndex = Math.max(0, Math.min(currentIndices[type] + direction, 9)); // Assuming max index is 9
+        currentIndices[type] = newIndex; // Update the current index
+        
+        chartImg.src = `/bar/${type}/${newIndex}?_=${Date.now()}`;
+        mapImg.src = `/map/${type}/${newIndex}?_=${Date.now()}`;
+        
+        // Update the title
+        if (titleElement) {
+            const baseTitle = type === 'scorigami' ? 'Most likely scorigami' : 'Most likely non-scorigami';
+            const prefix = newIndex === 0 ? '' : `(#${newIndex + 1}) `;
+            titleElement.textContent = prefix + baseTitle;
+        }
+        
+        // Update button states
+        updateButtonStates(type, newIndex);
+    }
+}
+
+function updateButtonStates(type, index) {
+    const prevButton = document.querySelector(`.prev-button[data-type="${type}"]`);
+    const nextButton = document.querySelector(`.next-button[data-type="${type}"]`);
+    
+    if (prevButton) {
+        prevButton.disabled = index === 0;
+    }
+    if (nextButton) {
+        nextButton.disabled = index === 9; // Assuming max index is 9
+    }
+}
+
+// Initialize button states on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateButtonStates('scorigami', 0);
+    updateButtonStates('non-scorigami', 0);
+
+    const navButtons = document.querySelectorAll('.nav-button');
+    navButtons.forEach(button => {
+        button.addEventListener('click', debounce(function() {
+            const type = this.dataset.type;
+            const direction = this.classList.contains('prev-button') ? -1 : 1;
+            updateImages(type, direction);
+        }, 250)); // 250ms debounce time
+    });
 });

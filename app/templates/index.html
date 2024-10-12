@@ -261,7 +261,66 @@
             }
         }
 
+        .navigation-buttons button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
+        .section-title-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            height: 50px; /* Ensure sufficient height */
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0 10px;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px; /* Set a fixed width */
+            height: 40px; /* Set a fixed height */
+        }
+
+        .nav-button:hover:not(:disabled) {
+            opacity: 0.7;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-button.prev-button {
+            left: 10px; /* Adjust as needed */
+        }
+
+        .nav-button.next-button {
+            right: 10px; /* Adjust as needed */
+        }
+
+        /* Remove the old navigation-buttons styles if they exist */
 
     </style>
 </head>
@@ -282,22 +341,30 @@
 
         <div class="map-container">
             <div class="chart-map-pair">
-                <div class="section-title">Most likely scorigami</div>
+                <div class="section-title-container">
+                    <button class="nav-button prev-button" data-type="scorigami" disabled>&larr;</button>
+                    <div class="section-title">Most likely scorigami</div>
+                    <button class="nav-button next-button" data-type="scorigami">&rarr;</button>
+                </div>
                 <div class="chart-wrapper">
-                    <img src="/bar/false" alt="True Bar Chart" class="chart-image" loading="lazy">
+                    <img src="/bar/scorigami/0" alt="Scorigami Bar Chart" class="chart-image" loading="lazy">
                 </div>
                 <div class="map-wrapper">
-                    <img src="/map/false" alt="True Map" class="map-image" loading="lazy">
+                    <img src="/map/scorigami/0" alt="Scorigami Map" class="map-image" loading="lazy">
                 </div>
             </div>
 
             <div class="chart-map-pair">
-                <div class="section-title">Most likely non-scorigami</div>
+                <div class="section-title-container">
+                    <button class="nav-button prev-button" data-type="non-scorigami" disabled>&larr;</button>
+                    <div class="section-title">Most likely non-scorigami</div>
+                    <button class="nav-button next-button" data-type="non-scorigami">&rarr;</button>
+                </div>
                 <div class="chart-wrapper">
-                    <img src="/bar/true" alt="False Bar Chart" class="chart-image" loading="lazy">
+                    <img src="/bar/non-scorigami/0" alt="Non-Scorigami Bar Chart" class="chart-image" loading="lazy">
                 </div>
                 <div class="map-wrapper">
-                    <img src="/map/true" alt="False Map" class="map-image" loading="lazy">
+                    <img src="/map/non-scorigami/0" alt="Non-Scorigami Map" class="map-image" loading="lazy">
                 </div>
             </div>
         </div>
@@ -308,7 +375,7 @@
         <div class="explanation-container">
             <div class="explanation">
                 <h2>What is NFL Scorigami?</h2>
-                <p><strong>Scorigami</strong> refers to a unique final score in an NFL game that has never happened before in the league's history. The idea was popularized by Jon Bois, who created a project to track and predict new, never-before-seen NFL scores. Every time a game ends with a final score that has never occurred before in NFL history, it is called a "Scorigami."</p>
+                <p><strong>Scorigami</strong> refers to a unique final score in an NFL game that has never happened before in the league's history. The idea was popularized by Jon Bois, who created a project to track and predict new, never-before-seen NFL scores. Every time a game ends with a final score that has never occurred before in NFL history, it would be considered a "Scorigami."</p>
                 <p>For example, if a game finishes 29-18 and that exact score combination has never appeared in any prior NFL game, it would be considered a Scorigami. NFLScorigami.com tracks these scores in real time, adding a layer of excitement for fans as they observe rare combinations of points that have never occurred across over 100 years of NFL history.</p>
 
                 <h2>What is Electoral College-igami?</h2>

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, send_file
 from app.charts import create_gauge_chart, create_line_chart
 from flask import send_file, render_template, current_app as app
 import os
@@ -23,50 +23,18 @@ def update_chart():
     return "",204
 
 
-@main.route('/map/true')
-def update_election_map_true():
-    image_path = fetch_election_map(False)
-
-    # Navigate up one directory from the app root to reach the parent directory of 'static'
+@main.route('/map/<string:scorigami>/<int:index>')
+def update_election_map(scorigami, index):
+    is_scorigami = scorigami == 'scorigami'
+    image_path = fetch_election_map(is_scorigami, index)
     parent_dir = os.path.dirname(app.root_path)
-
-    # Join the parent directory with the image_path
     full_image_path = os.path.join(parent_dir, image_path)
-
     return send_file(full_image_path, mimetype='image/png')
 
-@main.route('/map/false')
-def update_election_map_false():
-    image_path = fetch_election_map(True)
-
-    # Navigate up one directory from the app root to reach the parent directory of 'static'
+@main.route('/bar/<string:scorigami>/<int:index>')
+def update_election_bar(scorigami, index):
+    is_scorigami = scorigami == 'scorigami'
+    image_path = fetch_election_bar(is_scorigami, index)
     parent_dir = os.path.dirname(app.root_path)
-
-    # Join the parent directory with the image_path
     full_image_path = os.path.join(parent_dir, image_path)
-
-    return send_file(full_image_path, mimetype='image/png')
-
-@main.route('/bar/true')
-def update_election_bar_true():
-    image_path = fetch_election_bar(False)
-
-    # Navigate up one directory from the app root to reach the parent directory of 'static'
-    parent_dir = os.path.dirname(app.root_path)
-
-    # Join the parent directory with the image_path
-    full_image_path = os.path.join(parent_dir, image_path)
-
-    return send_file(full_image_path, mimetype='image/png')
-
-@main.route('/bar/false')
-def update_election_bar_false():
-    image_path = fetch_election_bar(True)
-
-    # Navigate up one directory from the app root to reach the parent directory of 'static'
-    parent_dir = os.path.dirname(app.root_path)
-
-    # Join the parent directory with the image_path
-    full_image_path = os.path.join(parent_dir, image_path)
-
     return send_file(full_image_path, mimetype='image/png')

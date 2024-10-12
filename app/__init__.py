@@ -3,7 +3,7 @@ import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.api.polymarket import update_presidential_odds_database
 from app.tasks import update_data, process_and_upload_historicals
-
+from app.util_binary_chart import update_grid_chartz
 
 
 
@@ -31,6 +31,7 @@ def create_app():
 
     # Schedule the database update task (every 15 minutes)
     scheduler.add_job(func=update_presidential_odds_database, trigger="interval", minutes=30)
+    scheduler.add_job(func=update_grid_chartz, trigger="interval", minutes=30)
 
     # Schedule the data update task (every 17 minutes)
     scheduler.add_job(func=update_data, trigger="interval", minutes=35)

@@ -56,7 +56,7 @@ def update_data():
     return outcomes
 
 
-def fetch_election_bar(scorigami):
+def fetch_election_bar(scorigami, index=0):
     """Take scorigami true or false and get us the bar chart path as .png"""
     if scorigami == True:
         bolean_scorigami = False
@@ -64,14 +64,14 @@ def fetch_election_bar(scorigami):
         bolean_scorigami = True
     outcomes = fetch_and_convert_data()
     outcomes = outcomes[outcomes['Is_In_Historical']== bolean_scorigami]
-    outcome_dict = outcomes.sort_values(by='Probability',ascending=False).iloc[0]
+    outcome_dict = outcomes.sort_values(by='Probability',ascending=False).iloc[index]
     democrat_votes = outcome_dict['Democrat_Votes']
     republican_votes = outcome_dict['Republican_Votes']
     result_string = f"static/bars/D{democrat_votes}_R{republican_votes}.png"
     return result_string
 
 
-def fetch_election_map(scorigami):
+def fetch_election_map(scorigami, index=0):
     """Take in a dict which is the dict cell of the outcome of the election and return a map"""
     if scorigami == True:
         bolean_scorigami = False
@@ -79,7 +79,7 @@ def fetch_election_map(scorigami):
         bolean_scorigami = True
     outcomes = fetch_and_convert_data()
     outcomes = outcomes[outcomes['Is_In_Historical']== bolean_scorigami]
-    outcome_dict = outcomes.sort_values(by='Probability',ascending=False).iloc[0]['Scenario']
+    outcome_dict = outcomes.sort_values(by='Probability',ascending=False).iloc[index]['Scenario']
 
     join_outcome_df = pd.DataFrame(outcome_dict, index=[0]).T.reset_index().rename(
         columns={'index': 'CorrectedState', 0: 'Winner'})
