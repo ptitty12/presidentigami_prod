@@ -25,7 +25,7 @@ def update_chart():
 
 @main.route('/map/<string:scorigami>/<int:index>')
 def update_election_map(scorigami, index):
-    is_scorigami = scorigami == 'scorigami'
+    is_scorigami = scorigami == 'scorigami' #unintuitive boolean again
     image_path = fetch_election_map(is_scorigami, index)
     parent_dir = os.path.dirname(app.root_path)
     full_image_path = os.path.join(parent_dir, image_path)

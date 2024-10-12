@@ -78,7 +78,7 @@ def generate_election_scenarios(df, certainty_threshold=Decimal('0.90')):
 
     results = pd.DataFrame(scenarios)
 
-    # Normalize probabilities
+    # Normalize probabilities, don't think this really matters since we are no longer using the aggregate probability but we will keep it since I think it helps with grabbing probz later
     total_prob = sum(results['Probability'])
     results['Probability'] = results['Probability'].apply(lambda x: x / total_prob)
 

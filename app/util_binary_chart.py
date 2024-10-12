@@ -5,6 +5,7 @@ import numpy as np
 import os
 from app.db_utils import fetch_and_convert_data
 def update_grid_chartz():
+    """"This is absolute spaghetti code, but it works so here it will remain, littered with comments"""
     print(f"Current working directory: {os.getcwd()}")
 
     # Define the base directory (assuming the script is in the app folder)
@@ -44,7 +45,7 @@ def update_grid_chartz():
     # Apply the processing to the 'Election_Data' column
     historical_outcomes['Election_Data'] = historical_outcomes['Election_Data'].apply(process_election_data)
 
-    # Function to extract Winner and Loser, and check if their sum equals 538
+    # Function to extract Winner and Loser, and check if their sum equals 538 since anyhting prior to 538 change is no longer possilbe
     def extract_winner_loser(row):
         sorted_votes = sorted(row['Electoral_Votes'], reverse=True)
         winner = sorted_votes[0]
@@ -213,8 +214,9 @@ def update_grid_chartz():
         fig.add_trace(trace)
 
     fig.update_layout(
-        width=880,
-        height=750,
+        autosize=False,  # Change back to False
+        width=900,
+        height=880,
         showlegend=False,
         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
@@ -272,31 +274,6 @@ def update_grid_chartz():
         <div id="plotly-div">
             {plot_html}
         </div>
-        <script>
-            function adjustTooltipSize() {{
-                var tooltips = document.querySelectorAll('.hoverlayer .hovertext');
-                var screenWidth = window.innerWidth;
-
-                tooltips.forEach(function(tooltip) {{
-                    if (screenWidth <= 768) {{  // Mobile devices
-                        tooltip.style.fontSize = '10px';  // Smaller font size for mobile
-                        tooltip.style.width = '150px';   // Narrower width for mobile
-                    }} else {{
-                        tooltip.style.fontSize = '14px';  // Default font size for larger screens
-                        tooltip.style.width = 'auto';    // Default width for larger screens
-                    }}
-                }});
-            }}
-
-            // Run on page load
-            window.addEventListener('load', adjustTooltipSize);
-
-            // Run on window resize
-            window.addEventListener('resize', adjustTooltipSize);
-
-            // Run periodically to catch any dynamically created tooltips
-            setInterval(adjustTooltipSize, 1000);
-        </script>
     </body>
     </html>
     """

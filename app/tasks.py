@@ -23,13 +23,12 @@ import logging
 
 
 def update_data():
-    """This grabs the df that is most current via odds and states than generates the elections"""
-    # Connect to SQLite database and read data
+    """Grabs most current view ---  odds and states---- than generates the elections"""
     with sqlite3.connect('presidentigami.db') as conn:
         current_core = pd.read_sql_query("SELECT * FROM odds_and_votes", conn)
         historical_games = pd.read_sql_query("SELECT * FROM historical_results", conn)
 
-    current_core['Current Favorite'] = current_core['Odds'].apply(lambda x: 'Republican' if x >= 0.5 else 'Democrat')
+    current_core['Current Favorite'] = current_core['Odds'].apply(lambda x: 'Republican' if x >= 0.5 else 'Democrat') #yeah yeah 0.5 goes in favor to repubs but they never exists in the data
     historical_list = list(historical_games['Electoral_Votes'].apply(ast.literal_eval))
 
     # Generate election scenarios
@@ -42,11 +41,12 @@ def update_data():
     outcomes['Votes_List'] = outcomes['Votes_List'].apply(json.dumps)
     outcomes['Probability'] = outcomes['Probability'].astype(str)
 
-    # Upload to SQLite database
+    # Upload to SQLite
     with sqlite3.connect('presidentigami.db') as conn:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM outcomes;")
         outcomes.to_sql('outcomes', conn, if_exists='append', index=False)
+        #commits most current outcomes, which is the result dict winner votes loser votes etc
 
     # Convert back to original types for return value
     outcomes['Scenario'] = outcomes['Scenario'].apply(json.loads)
@@ -57,7 +57,7 @@ def update_data():
 
 
 def fetch_election_bar(scorigami, index=0):
-    """Take scorigami true or false and get us the bar chart path as .png"""
+    """Take scorigami true or false and get us the bar chart path as .png, extremely unintutive bolean scorigami since we use 'Is_In_Historical' as the comparison point"""
     if scorigami == True:
         bolean_scorigami = False
     else:
@@ -72,7 +72,7 @@ def fetch_election_bar(scorigami, index=0):
 
 
 def fetch_election_map(scorigami, index=0):
-    """Take in a dict which is the dict cell of the outcome of the election and return a map"""
+    """Take in a dict which is the dict cell of the outcome of the election and return a map, see unintutive note above function"""
     if scorigami == True:
         bolean_scorigami = False
     else:
@@ -88,7 +88,7 @@ def fetch_election_map(scorigami, index=0):
     join_outcome_df['Vote'] = join_outcome_df['Winner'].map(votes_dict)
 
     def generate_filename(state_colors, scorigami):
-        # Convert the concatenation of state ids and winners into a hash
+        # Convert the concatenation of state ids and winners into a hash so that we can use it as a filename
         concatenated_string = ''.join(state_colors['id'] + state_colors['Winner'].str[0])
         hashed_string = hashlib.md5(concatenated_string.encode()).hexdigest()  # Using MD5 hash for simplicity
         filename = f'static/maps/{hashed_string}_{scorigami}'
@@ -134,6 +134,7 @@ def fetch_election_map(scorigami, index=0):
 
     if os.path.exists(f'{save_as}.png'):
         return output_path
+    #hopefully the below never happens in production, lol
     else:
 
         blank_url = r"https://www.270towin.com/maps/jP4ke"
@@ -280,11 +281,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def process_and_upload_historicals():
     """Processes current odds and snapshots to generate and upload historical outcomes."""
     try:
-        # Connect to SQLite database with a timeout to handle locked database scenarios
+        # Connect to SQLite database with a timeout to handle locked database scenarios, testing this out, probably needed elsewhere
         with sqlite3.connect('presidentigami.db', timeout=10) as conn:
             cursor = conn.cursor()
 
-            # Create the historical_percents table if it doesn't exist
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS historical_percents (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -293,7 +293,7 @@ def process_and_upload_historicals():
                 )
             ''')
 
-            # Fetch records that haven't been processed yet
+            # Fetch records that haven't been processed yet via the left join being empty, BI skills finally being used
             not_processed_yet = pd.read_sql_query("""
                 SELECT r.Snapshot, r.Odds, r.State, v.Votes as Electoral_Votes
                 FROM historical_odds r

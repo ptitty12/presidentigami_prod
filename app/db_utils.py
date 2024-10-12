@@ -15,8 +15,6 @@ def upload_to_sql(outcomes):
         # Delete existing data
         delete_query = "DELETE FROM outcomes;"
         cursor.execute(delete_query)
-
-        # Define the insert query
         insert_query = """
         INSERT INTO outcomes (Scenario, Probability, Republican_votes, Democrat_votes, Winner, Votes_list, Is_In_Historical)
         VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -51,10 +49,10 @@ def fetch_and_convert_data():
     df['Scenario'] = df['Scenario'].apply(json.loads)
     df['Votes_List'] = df['Votes_List'].apply(json.loads)
 
-    # Convert 'Probability' column from string back to Decimal
+    # Convert 'Probability' column from string back to Decimal to preserve da precision
     df['Probability'] = df['Probability'].apply(Decimal)
 
-    # Return the modified DataFrame
+    # Return the DataFrame with proper data types
     return df
 
 
@@ -86,6 +84,6 @@ def fetch_and_convert_historicals():
         df = pd.read_sql_query("SELECT * FROM historical_percents", conn)
 
     # Convert JSON strings back to dictionaries/lists
-    #df['Snapshot'] = df['Snapshot'].apply(Datetime)
+    #df['Snapshot'] = df['Snapshot'].apply(Datetime) idek what this was
 
     return df
