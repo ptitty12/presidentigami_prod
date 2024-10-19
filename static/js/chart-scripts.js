@@ -24,21 +24,28 @@ var config = {
     staticPlot: true
 };
 
-// Create the gauge chart
 function createGaugeChart() {
     console.log("Creating gauge chart with data:", chartJSON);
-    Plotly.newPlot('gauge-chart', chartJSON.data, {
-        ...chartJSON.layout,
-        datarevision: new Date().getTime(),
+    Plotly.newPlot('gauge-chart', [{
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: 0,  // Start at 0
         gauge: {
-            ...chartJSON.layout.gauge,
-            axis: { visible: false },
+            axis: { visible: false, range: [0, 100] },
+            bar: { color: "green" },
+            bgcolor: "lightblue",
+            borderwidth: 0,
         },
-        number: { valueformat: '.2f', suffix: '%' },
-        margin: { t: 0, b: 133, l: 0, r: 0 },
+        number: {
+            font: { size: 40 },
+            suffix: "%",
+            valueformat: ".1f"  // Format to one decimal place
+        },
+    }], {
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        height: 400
+        height: 400,
+        margin: { t: 0, b: 133, l: 0, r: 0 }
     }, config).then(function() {
         animateGauge(0);
     });
@@ -85,13 +92,15 @@ function modifyLineChartLayout(layout) {
     return layout;
 }
 
-// Create the line chart
 function createLineChart() {
     console.log("Creating line chart with data:", lineChartJSON);
     // Modify the layout to show only start and end dates
     let modifiedLayout = modifyLineChartLayout(lineChartJSON.layout);
 
-    Plotly.newPlot('line-chart', lineChartJSON.data, {
+    Plotly.newPlot('line-chart', [{
+        ...lineChartJSON.data[0],
+        line: { color: 'green' }  // Set the line color to green
+    }], {
         ...modifiedLayout,
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
