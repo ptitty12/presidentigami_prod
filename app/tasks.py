@@ -297,8 +297,10 @@ def process_and_upload_historicals():
             not_processed_yet = pd.read_sql_query("""
                 SELECT r.Snapshot, r.Odds, r.State, v.Votes as Electoral_Votes
                 FROM historical_odds r
-                LEFT JOIN historical_percents l ON r.Snapshot = l.Snapshot
-                LEFT JOIN votes_per_state v ON r.State = v.State
+                LEFT JOIN historical_percents l 
+                    ON strftime('%Y-%m-%d', r.Snapshot) = strftime('%Y-%m-%d', l.Snapshot)
+                LEFT JOIN votes_per_state v 
+                    ON r.State = v.State
                 WHERE l.Snapshot IS NULL;
             """, conn)
 
