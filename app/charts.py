@@ -74,7 +74,7 @@ def create_line_chart():
             gridcolor='rgba(52, 73, 94, 0.1)',  # Light grid color
             showline=False,
             showticklabels=False,
-            range=[df['Scorigami_Percent'].min() - 1, df['Scorigami_Percent'].max() + 1],
+            range=[80, 100],
             linecolor='#34495e',  # Set y-axis line color
             tickfont=dict(color='#34495e')  # Set y-axis tick color
         ),

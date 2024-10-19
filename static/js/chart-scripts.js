@@ -101,10 +101,6 @@ function createLineChart() {
             ...modifiedLayout.xaxis,
             showgrid: false,
         },
-        yaxis: {
-            visible: false,
-            showgrid: false,
-        }
     }, config)
         .then(function() {
             console.log('Line chart created successfully');
