@@ -5,33 +5,93 @@ import sqlite3
 from app.db_utils import upload_odds_snapshot
 
 
+all_56_states = ['903665',
+ '903679',
+ '903683',
+ '903666',
+ '903667',
+ '903674',
+ '903650',
+ '903658',
+ '903636',
+ '10170',
+ '903669',
+ '903639',
+ '903660',
+ '903649',
+ '903637',
+ '903646',
+ '903640',
+ '903648',
+ '903655',
+ '903641',
+ '903643',
+ '903664',
+ '10169',
+ '903684',
+ '903631',
+ '903633',
+ '903677',
+ '903635',
+ '903657',
+ '903681',
+ '903656',
+ '903654',
+ '10172',
+ '903662',
+ '10382',
+ '903642',
+ '903663',
+ '10173',
+ '10164',
+ '10175',
+ '903653',
+ '903672',
+ '903682',
+ '903651',
+ '903661',
+ '903676',
+ '903673',
+ '903659',
+ '903638',
+ '903671',
+ '903634',
+ '903652',
+ '903668',
+ '903670',
+ '10166',
+ '10174']
 def update_presidential_odds_database(limit=10000):
-    def get_all_events(limit=10000):
+    def get_all_events(all_56_states, limit=10000):
         all_events = []
+        state_events = []
         offset = 0
         page_size = 100  # The API seems to return 100 events per request
-
+        
         while len(all_events) < limit:
             url = f"https://gamma-api.polymarket.com/events?closed=false&limit={page_size}&offset={offset}"
             r = requests.get(url)
-
             if r.status_code != 200:
                 print(f"Error: Received status code {r.status_code}")
                 break
-
+            
             events = r.json()
-
             if not events:
                 break  # No more events to fetch
-
+            
             all_events.extend(events)
-
+            
+            # Filter for state events
+            for event in events:
+                if event['id'] in all_56_states:
+                    state_events.append(event)
+            
             if len(events) < page_size:
                 break  # Last page reached
-
+            
             offset += len(events)
-
-        return all_events[:limit]  # Trim to the requested limit
+        
+        return state_events[:limit]  # Trim to the requested limit
 
     def extract_state_name(full_name):
         # Remove "Presidential Election Winner" from the end
@@ -55,7 +115,7 @@ def update_presidential_odds_database(limit=10000):
         return name.strip()
 
     # Fetch events
-    events = get_all_events(limit)
+    events = get_all_events(all_56_states,limit)
 
     # Process events
     state_events = {}
@@ -77,41 +137,41 @@ def update_presidential_odds_database(limit=10000):
     df.drop(columns='Question', inplace=True)
     current_odds = df[df['State'].str.contains('Will any other') == False]
     current_odds.loc[:, 'Odds Yes'] = current_odds['Odds Yes'].astype(float)
-
-
-
+    if len(current_odds) == 56:
     # Connect to SQLite database
-    conn = sqlite3.connect('presidentigami.db')
-    cursor = conn.cursor()
+        conn = sqlite3.connect('presidentigami.db')
+        cursor = conn.cursor()
 
-    # Create the current_odds table if it doesn't exist
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS current_odds (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        State TEXT,
-        Odds DECIMAL(12,6)
-    )
-    ''')
-    conn.commit()
-
-    # Step 1: Delete existing data in the table
-    cursor.execute('DELETE FROM current_odds')
-
-    # Step 2: Insert new data from the DataFrame
-    for _, row in current_odds.iterrows():
+        # Create the current_odds table if it doesn't exist
         cursor.execute('''
-        INSERT INTO current_odds (State, Odds)
-        VALUES (?, ?)
-        ''', (
-            row['State'],
-            row['Odds Yes']
-        ))
+        CREATE TABLE IF NOT EXISTS current_odds (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            State TEXT,
+            Odds DECIMAL(12,6)
+        )
+        ''')
+        conn.commit()
 
-    # Step 3: Commit the transaction to save changes
-    conn.commit()
-    print("Data deleted and new data inserted successfully.")
+        # Step 1: Delete existing data in the table
+        cursor.execute('DELETE FROM current_odds')
 
-    # Close the connection
-    conn.close()
+        # Step 2: Insert new data from the DataFrame
+        for _, row in current_odds.iterrows():
+            cursor.execute('''
+            INSERT INTO current_odds (State, Odds)
+            VALUES (?, ?)
+            ''', (
+                row['State'],
+                row['Odds Yes']
+            ))
 
-    upload_odds_snapshot(current_odds)
+        # Step 3: Commit the transaction to save changes
+        conn.commit()
+        print("Data deleted and new data inserted successfully.")
+
+        # Close the connection
+        conn.close()
+
+        upload_odds_snapshot(current_odds)
+    else:
+        print("Data not updated")
