@@ -65,8 +65,8 @@ def create_line_chart():
             linecolor='#34495e',  # Set x-axis line color
             tickfont=dict(color='#34495e'),  # Set x-axis tick color
             tickmode='array',
-            tickvals=[df['Snapshot'].iloc[0], df['Snapshot'].iloc[-1]],
-            ticktext=[df['Snapshot'].iloc[0], df['Snapshot'].iloc[-1]]
+            tickvals=[df['Snapshot'].min(), df['Snapshot'].max()],
+            ticktext=[df['Snapshot'].min(), df['Snapshot'].max()]
         ),
         yaxis=dict(
             title='%',
