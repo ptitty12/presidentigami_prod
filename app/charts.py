@@ -46,6 +46,7 @@ def create_gauge_chart():
 
 def create_line_chart():
     df = fetch_and_convert_historicals()
+    df = df.sort_values(by='Snapshot')
     # Create the line trace for Scorigami_Percent over time
     line_trace = go.Scatter(
         x=df['Snapshot'],
