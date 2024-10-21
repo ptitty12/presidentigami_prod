@@ -3,6 +3,7 @@ import ast
 import pandas as pd
 import sqlite3
 from app.db_utils import upload_odds_snapshot
+import time
 
 
 all_56_states = ['903665',
