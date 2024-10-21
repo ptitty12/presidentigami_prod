@@ -138,40 +138,53 @@ def update_presidential_odds_database(limit=10000):
     current_odds = df[df['State'].str.contains('Will any other') == False]
     current_odds.loc[:, 'Odds Yes'] = current_odds['Odds Yes'].astype(float)
     if len(current_odds) == 56:
-    # Connect to SQLite database
-        conn = sqlite3.connect('presidentigami.db')
-        cursor = conn.cursor()
+        # Retry logic in case of database lock
+        retries = 5
+        while retries > 0:
+            try:
+                # Connect to SQLite database using a context manager
+                with sqlite3.connect('presidentigami.db', timeout=10) as conn:
+                    cursor = conn.cursor()
 
-        # Create the current_odds table if it doesn't exist
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS current_odds (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            State TEXT,
-            Odds DECIMAL(12,6)
-        )
-        ''')
-        conn.commit()
+                    # Create the current_odds table if it doesn't exist
+                    cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS current_odds (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        State TEXT,
+                        Odds DECIMAL(12,6)
+                    )
+                    ''')
 
-        # Step 1: Delete existing data in the table
-        cursor.execute('DELETE FROM current_odds')
+                    # Step 1: Delete existing data in the table
+                    cursor.execute('DELETE FROM current_odds')
 
-        # Step 2: Insert new data from the DataFrame
-        for _, row in current_odds.iterrows():
-            cursor.execute('''
-            INSERT INTO current_odds (State, Odds)
-            VALUES (?, ?)
-            ''', (
-                row['State'],
-                row['Odds Yes']
-            ))
+                    # Step 2: Insert new data from the DataFrame using executemany()
+                    cursor.executemany('''
+                    INSERT INTO current_odds (State, Odds)
+                    VALUES (?, ?)
+                    ''', current_odds[['State', 'Odds Yes']].values.tolist())
 
-        # Step 3: Commit the transaction to save changes
-        conn.commit()
-        print("Data deleted and new data inserted successfully.")
+                    # Step 3: Commit the transaction to save changes
+                    conn.commit()
 
-        # Close the connection
-        conn.close()
+                    print("Data deleted and new data inserted successfully.")
 
+                # Break out of the loop if everything succeeded
+                break
+
+            except sqlite3.OperationalError as e:
+                if "locked" in str(e).lower():
+                    print("Database is locked, retrying...")
+                    retries -= 1
+                    time.sleep(2)  # wait before retrying
+                else:
+                    # If it's another type of operational error, raise it
+                    raise
+
+        if retries == 0:
+            print("Failed to update database after multiple attempts due to locking issues.")
+
+        # Continue with the next step
         upload_odds_snapshot(current_odds)
     else:
         print("Data not updated")
