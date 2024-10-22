@@ -27,14 +27,23 @@ def create_app():
     # Initialize scheduler
     scheduler = BackgroundScheduler()
 
-    # Schedule everything
-    scheduler.add_job(func=update_presidential_odds_database, trigger="interval", minutes=30)
-    scheduler.add_job(func=update_grid_chartz, trigger="interval", minutes=30)
-    scheduler.add_job(func=update_data, trigger="interval", minutes=35)
-    scheduler.add_job(func=update_chart, trigger="interval", minutes=40)
+    def update_presidential_odds_database_job():
+        update_presidential_odds_database()
+        scheduler.add_job(update_grid_chartz_job, trigger="date")
 
-    scheduler.add_job(func=process_and_upload_historicals, trigger="interval", days=1)
+    def update_grid_chartz_job():
+        update_grid_chartz()
+        scheduler.add_job(update_data_job, trigger="date")
 
+    def update_data_job():
+        update_data()
+        scheduler.add_job(update_chart_job, trigger="date")
+
+    def update_chart_job():
+        update_chart()
+        scheduler.add_job(update_presidential_odds_database_job, trigger="interval", minutes=30)
+
+    scheduler.add_job(update_presidential_odds_database_job, trigger="interval", minutes=30)
     scheduler.start()
 
     # Import routes here to avoid circular imports

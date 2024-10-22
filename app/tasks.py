@@ -19,8 +19,28 @@ from PIL import Image
 import os
 import hashlib
 import logging
+import tweepy
+from PIL import Image
+import io
+import datetime
+import time
+import os
+import functools
 
+# Configure logging (if not already configured elsewhere)
+logging.basicConfig(filename='function_execution_times.log', level=logging.INFO,
+                    format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
+def log_execution_time(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        logging.info(f"{func.__name__} took {execution_time:.4f} seconds to execute.")
+        return result
+    return wrapper
 
 def update_data():
     """Grabs most current view ---  odds and states---- than generates the elections"""
@@ -278,6 +298,7 @@ def fetch_election_map(scorigami, index=0):
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+@log_execution_time
 def process_and_upload_historicals():
     """Processes current odds and snapshots to generate and upload historical outcomes."""
     try:
@@ -353,3 +374,121 @@ def process_and_upload_historicals():
     except Exception as e:
         logging.exception("An unexpected error occurred during processing.")
         raise  # Re-raise the exception for any other unexpected errors
+
+
+# fuck it dude we just adding everything to tasks
+def shit_post():
+    # Calculate the current scorigami percent
+    our_data = fetch_and_convert_data()
+    current_probability = float(our_data[our_data['Is_In_Historical'] == False]['Probability'].sum())
+    current_percent = current_probability * 100
+
+    # Load Twitter credentials from environment variables
+    bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
+    consumer_key = os.environ.get("TWITTER_CONSUMER_KEY")
+    consumer_secret = os.environ.get("TWITTER_CONSUMER_SECRET")
+    access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
+    access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
+    
+    
+    client = tweepy.Client(
+        consumer_key=consumer_key, consumer_secret=consumer_secret,
+        access_token=access_token, access_token_secret=access_token_secret
+    )
+    
+    def get_twitter_conn_v1(api_key, api_secret, access_token, access_token_secret) -> tweepy.API:
+        """Get twitter conn 1.1"""
+    
+        auth = tweepy.OAuth1UserHandler(api_key, api_secret)
+        auth.set_access_token(
+            access_token,
+            access_token_secret,
+        )
+        return tweepy.API(auth)
+    
+    client_v1 = get_twitter_conn_v1(consumer_key, consumer_secret, access_token, access_token_secret)
+    
+    
+    
+    def take_screenshot(url, class_name):
+        # Set up Selenium WebDriver with headless mode
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--window-size=1920,1318")
+    
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        
+        try:
+            # Navigate to the URL
+            driver.get(url)
+            time.sleep(5)  # Allow the page to load
+            
+            # Wait for the elements to be present and select the first one
+            elements = WebDriverWait(driver, 10).until(
+                EC.presence_of_all_elements_located((By.CLASS_NAME, class_name))
+            )
+            
+            # Get the first element with the specified class name
+            element = elements[0]
+            
+            # Get the location and size of the element
+            location = element.location
+            size = element.size
+            
+            # Take a screenshot of the entire page
+            png = driver.get_screenshot_as_png()
+            
+            # Use PIL to open the screenshot
+            im = Image.open(io.BytesIO(png))
+            
+            # Define the region to crop
+            left = location['x']
+            top = location['y']
+            right = location['x'] + size['width']
+            bottom = location['y'] + size['height']
+            
+            # Crop the image
+            im = im.crop((left, top, right, bottom))
+            
+            # Generate filename with current date
+            filename = datetime.datetime.now().strftime("%Y%m%d") + ".png"
+            
+            # Save the cropped image
+            im.save(filename)
+            print(f"Screenshot saved as {filename}")
+            
+        finally:
+            driver.quit()
+
+
+    
+    # Usage
+    url = "https://presidentigami.com"
+    class_name = "chart-map-pair"
+    take_screenshot(url, class_name)
+    
+    
+    
+    
+    media_path = datetime.datetime.now().strftime("%Y%m%d") + ".png"
+    media = client_v1.media_upload(filename=media_path)
+    media_id = media.media_id
+    
+    now = datetime.datetime.now()
+    
+    # election day
+    target_date = datetime.datetime(now.year, 11, 5)
+    
+    # dif in days
+    days_difference = (target_date - now).days
+    response = client.create_tweet(
+        text= f"{days_difference} days until election \n\nCurrent Scorigami Percent: {current_percent:.2f}%\n\nMost Likely Scorigami: ",
+        media_ids  = [media_id]
+    )
+    print(f"https://twitter.com/user/status/{response.data['id']}")
+
+
+

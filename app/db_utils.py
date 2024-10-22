@@ -1,13 +1,24 @@
-
 import ast
 from datetime import datetime
 import sqlite3
 import pandas as pd
 from decimal import Decimal
 import json
-# this will be how we interact with sql table
+import time
+import functools
 
+def log_execution_time(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"{func.__name__} took {execution_time:.4f} seconds to execute.")
+        return result
+    return wrapper
 
+@log_execution_time
 def upload_to_sql(outcomes):
     with sqlite3.connect('presidentigami.db') as conn:
         cursor = conn.cursor()
@@ -33,10 +44,7 @@ def upload_to_sql(outcomes):
         conn.commit()
         print("Data deleted and new data inserted successfully.")
 
-
-
-
-
+@log_execution_time
 def fetch_and_convert_data():
     """This gives us the core, processed outcomes df. Has each scenario and probability"""
 
@@ -55,7 +63,7 @@ def fetch_and_convert_data():
     # Return the DataFrame with proper data types
     return df
 
-
+@log_execution_time
 def upload_odds_snapshot(recently_fetched_presidential_odds):
     """Upload snapshot of oddds"""
     recent_odds = recently_fetched_presidential_odds
@@ -74,7 +82,7 @@ def upload_odds_snapshot(recently_fetched_presidential_odds):
 
     print("New data inserted successfully into Current_Odds and Historical_Odds.")
 
-
+@log_execution_time
 def fetch_and_convert_historicals():
     """for line chart"""
 
