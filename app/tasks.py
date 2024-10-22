@@ -26,6 +26,8 @@ import datetime
 import time
 import os
 import functools
+from dotenv import load_dotenv
+
 
 # Configure logging (if not already configured elsewhere)
 logging.basicConfig(filename='function_execution_times.log', level=logging.INFO,
@@ -316,13 +318,15 @@ def process_and_upload_historicals():
 
             # Fetch records that haven't been processed yet via the left join being empty, BI skills finally being used
             not_processed_yet = pd.read_sql_query("""
-                SELECT r.Snapshot, r.Odds, r.State, v.Votes as Electoral_Votes
-                FROM historical_odds r
-                LEFT JOIN historical_percents l 
-                    ON strftime('%Y-%m-%d', r.Snapshot) = strftime('%Y-%m-%d', l.Snapshot)
-                LEFT JOIN votes_per_state v 
-                    ON r.State = v.State
-                WHERE l.Snapshot IS NULL;
+                    SELECT r.Snapshot, r.Odds, r.State, v.Votes as Electoral_Votes
+                    FROM historical_odds r
+                    LEFT JOIN votes_per_state v 
+                        ON r.State = v.State
+                    WHERE DATE(r.Snapshot) NOT IN (
+                        SELECT DATE(l.Snapshot)
+                        FROM historical_percents l
+                    );
+
             """, conn)
 
             if not not_processed_yet.empty:

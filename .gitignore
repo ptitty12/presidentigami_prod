@@ -8,3 +8,5 @@ gunicorn.log
 /static/maps/
 /static/bars/
 /static/electoral_outcomes_grid.html
+**/.env
+.venv/
