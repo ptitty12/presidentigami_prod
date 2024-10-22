@@ -2,7 +2,7 @@ from flask import Flask
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.api.polymarket import update_presidential_odds_database
-from app.tasks import update_data, process_and_upload_historicals
+from app.tasks import update_data, process_and_upload_historicals, shit_post
 from app.util_binary_chart import update_grid_chartz
 
 
@@ -43,6 +43,7 @@ def create_app():
         update_chart()
         scheduler.add_job(update_presidential_odds_database_job, trigger="interval", minutes=30)
 
+    scheduler.add_job(shit_post, trigger="interval", days=1)
     scheduler.add_job(update_presidential_odds_database_job, trigger="interval", minutes=30)
     scheduler.start()
 
