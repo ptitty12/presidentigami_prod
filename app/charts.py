@@ -75,7 +75,7 @@ def create_line_chart():
             gridcolor='rgba(52, 73, 94, 0.1)',  # Light grid color
             showline=False,
             showticklabels=False,
-            range=[80, 100],
+            range=[0, 100],
             linecolor='#34495e',  # Set y-axis line color
             tickfont=dict(color='#34495e')  # Set y-axis tick color
         ),
