@@ -85,8 +85,8 @@ def update_presidential_odds_database(limit=10000):
             
             # Filter for state events
             for event in events:
-                #if event['id'] in all_56_states:
-                state_events.append(event)
+                if event['id'] in all_56_states:
+                    state_events.append(event)
             
             if len(events) < page_size:
                 break  # Last page reached
@@ -122,8 +122,8 @@ def update_presidential_odds_database(limit=10000):
     # Process events
     state_events = {}
     for event in events:
-        if 'Presidential Election Winner' in event['title']:
-            state_events[event['id']] = event
+        #if 'Presidential Election Winner' in event['title']:
+        state_events[event['id']] = event
 
     hold_republican_odds = {}
     for event in state_events.values():
