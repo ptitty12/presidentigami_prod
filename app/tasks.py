@@ -322,10 +322,12 @@ def process_and_upload_historicals():
                     FROM historical_odds r
                     LEFT JOIN votes_per_state v 
                         ON r.State = v.State
-                    WHERE DATE(r.Snapshot) NOT IN (
-                        SELECT DATE(l.Snapshot)
+                    WHERE substr(r.Snapshot, 1, 16) NOT IN (
+                        SELECT substr(l.Snapshot, 1, 16)
                         FROM historical_percents l
-                    );
+                        WHERE date(l.Snapshot) = date('now')
+                    )
+                    AND date(r.Snapshot) = date('now');
 
             """, conn)
 
