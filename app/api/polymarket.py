@@ -61,7 +61,8 @@ all_56_states = ['903665',
  '903668',
  '903670',
  '10166',
- '10174']
+ '10174',
+ '903636','903648','903665','903637','903650','903667','903683']
 def update_presidential_odds_database(limit=10000):
     def get_all_events(all_56_states, limit=10000):
         all_events = []
@@ -84,8 +85,8 @@ def update_presidential_odds_database(limit=10000):
             
             # Filter for state events
             for event in events:
-                if event['id'] in all_56_states:
-                    state_events.append(event)
+                #if event['id'] in all_56_states:
+                state_events.append(event)
             
             if len(events) < page_size:
                 break  # Last page reached
