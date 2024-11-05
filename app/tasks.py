@@ -154,8 +154,8 @@ def fetch_election_map(scorigami, index=0):
     #check if exists
 
 
-    if os.path.exists(f'{save_as}.png'):
-        return output_path
+    #if os.path.exists(f'{save_as}.png'):
+    return output_path
     #hopefully the below never happens in production, lol
     else:
 
