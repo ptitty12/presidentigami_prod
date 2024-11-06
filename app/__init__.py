@@ -111,17 +111,12 @@ def create_app():
     # Add jobs with fixed schedules
     scheduler.add_job(update_sequence, 
                      trigger="interval", 
-                     minutes=30, 
+                     minutes=15, 
                      id="update_sequence",
                      max_instances=1,  # Prevent overlapping
                      coalesce=True)    # Combine missed runs
     
-    scheduler.add_job(shit_post, 
-                     trigger="interval", 
-                     days=1, 
-                     id="shit_post",
-                     max_instances=1,
-                     coalesce=True)
+
     
     scheduler.start()
 
