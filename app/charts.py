@@ -45,12 +45,24 @@ def create_gauge_chart():
 
 
 
+from datetime import datetime, timedelta
+import json
+import plotly.graph_objects as go
+import plotly.utils
+import pandas as pd
+
 def create_line_chart():
     df = fetch_and_convert_historicals()
+    
+    # Convert 'Snapshot' from string format to datetime
+    df['Snapshot'] = pd.to_datetime(df['Snapshot'], errors='coerce')
+    
+    # Sort the DataFrame by 'Snapshot'
     df = df.sort_values(by='Snapshot')
-
+    
     # Calculate the date two days ago
     two_days_ago = datetime.now() - timedelta(days=2)
+    
     # Filter the DataFrame to only include data from the last two days
     df = df[df['Snapshot'] >= two_days_ago]
 
@@ -100,5 +112,7 @@ def create_line_chart():
     fig = go.Figure(data=[line_trace], layout=layout)
 
     return json.dumps({'data': fig.data, 'layout': fig.layout, 'config': config}, cls=plotly.utils.PlotlyJSONEncoder)
+
+
 
 
