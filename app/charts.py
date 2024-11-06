@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 import plotly.utils
 import json
 from app.db_utils import fetch_and_convert_data, fetch_and_convert_historicals
+from datetime import datetime, timedelta
 
 def create_gauge_chart():
     our_data = fetch_and_convert_data()
@@ -47,6 +48,12 @@ def create_gauge_chart():
 def create_line_chart():
     df = fetch_and_convert_historicals()
     df = df.sort_values(by='Snapshot')
+
+    # Calculate the date two days ago
+    two_days_ago = datetime.now() - timedelta(days=2)
+    # Filter the DataFrame to only include data from the last two days
+    df = df[df['Snapshot'] >= two_days_ago]
+
     # Create the line trace for Scorigami_Percent over time
     line_trace = go.Scatter(
         x=df['Snapshot'],
@@ -63,24 +70,24 @@ def create_line_chart():
             showgrid=False,
             showline=True,
             showticklabels=True,
-            linecolor='#34495e',  # Set x-axis line color
-            tickfont=dict(color='#34495e'),  # Set x-axis tick color
+            linecolor='#34495e',
+            tickfont=dict(color='#34495e'),
             tickmode='array',
-            tickvals=[df['Snapshot'].min(), df['Snapshot'].max()],
-            ticktext=[df['Snapshot'].min(), df['Snapshot'].max()]
+            tickvals=[two_days_ago, df['Snapshot'].max()],
+            ticktext=[two_days_ago.strftime('%Y-%m-%d'), df['Snapshot'].max().strftime('%Y-%m-%d')]
         ),
         yaxis=dict(
             title='%',
             showgrid=False,
-            gridcolor='rgba(52, 73, 94, 0.1)',  # Light grid color
+            gridcolor='rgba(52, 73, 94, 0.1)',
             showline=False,
             showticklabels=False,
             range=[0, 100],
-            linecolor='#34495e',  # Set y-axis line color
-            tickfont=dict(color='#34495e')  # Set y-axis tick color
+            linecolor='#34495e',
+            tickfont=dict(color='#34495e')
         ),
-        paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
-        plot_bgcolor='rgba(0,0,0,0)',  # Transparent plot area
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
         dragmode=False,
         showlegend=False,
     )

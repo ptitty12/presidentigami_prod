@@ -10,7 +10,7 @@ from itertools import product
 getcontext().prec = 50
 
 
-def generate_election_scenarios(df, certainty_threshold=Decimal('0.90')):
+def generate_election_scenarios(df, certainty_threshold=Decimal('0.95')):
     start_time = time.time()
 
     # Convert Odds to Decimal for precision
