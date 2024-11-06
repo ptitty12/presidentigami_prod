@@ -180,13 +180,10 @@ def process_and_upload_historicals():
                     FROM historical_odds r
                     LEFT JOIN votes_per_state v 
                         ON r.State = v.State
-                    WHERE substr(r.Snapshot, 1, 16) NOT IN (
-                        SELECT substr(l.Snapshot, 1, 16)
+                    WHERE DATE(r.Snapshot) NOT IN (
+                        SELECT DATE(l.Snapshot)
                         FROM historical_percents l
-                        WHERE date(l.Snapshot) = date('now')
-                    )
-                    AND date(r.Snapshot) = date('now');
-
+                    );
             """, conn)
 
             if not not_processed_yet.empty:
