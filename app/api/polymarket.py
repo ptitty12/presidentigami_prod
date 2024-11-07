@@ -6,187 +6,171 @@ from app.db_utils import upload_odds_snapshot
 import time
 
 
-all_56_states = ['903665',
- '903679',
- '903683',
- '903666',
- '903667',
- '903674',
- '903650',
- '903658',
- '903636',
- '10170',
- '903669',
- '903639',
- '903660',
- '903649',
- '903637',
- '903646',
- '903640',
- '903648',
- '903655',
- '903641',
- '903643',
- '903664',
- '10169',
- '903684',
- '903631',
- '903633',
- '903677',
- '903635',
- '903657',
- '903681',
- '903656',
- '903654',
- '10172',
- '903662',
- '10382',
- '903642',
- '903663',
- '10173',
- '10164',
- '10175',
- '903653',
- '903672',
- '903682',
- '903651',
- '903661',
- '903676',
- '903673',
- '903659',
- '903638',
- '903671',
- '903634',
- '903652',
- '903668',
- '903670',
- '10166',
- '10174',
- '903636','903648','903665','903637','903650','903667','903683']
-def update_presidential_odds_database(limit=10000):
-    def get_all_events(all_56_states, limit=10000):
-        all_events = []
+import requests
+import ast
+import pandas as pd
+import sqlite3
+import time
+
+# List of specific event IDs to fetch
+all_56_states = [
+    '903665', '903679', '903683', '903666', '903667', '903674', '903650',
+    '903658', '903636', '10170', '903669', '903639', '903660', '903649',
+    '903637', '903646', '903640', '903648', '903655', '903641', '903643',
+    '903664', '10169', '903684', '903631', '903633', '903677', '903635',
+    '903657', '903681', '903656', '903654', '10172', '903662', '10382',
+    '903642', '903663', '10173', '10164', '10175', '903653', '903672',
+    '903682', '903651', '903661', '903676', '903673', '903659', '903638',
+    '903671', '903634', '903652', '903668', '903670', '10166', '10174',
+    '903636', '903648', '903665', '903637', '903650', '903667', '903683'
+]
+
+def update_presidential_odds_database():
+    def get_all_events(event_ids):
         state_events = []
-        offset = 0
-        page_size = 100  # The API seems to return 100 events per request
-        
-        while len(all_events) < limit:
-            url = f"https://gamma-api.polymarket.com/events?closed=false&limit={page_size}&offset={offset}"
-            r = requests.get(url)
-            if r.status_code != 200:
-                print(f"Error: Received status code {r.status_code}")
-                break
-            
-            events = r.json()
-            if not events:
-                break  # No more events to fetch
-            
-            all_events.extend(events)
-            
-            # Filter for state events
-            for event in events:
-                if event['id'] in all_56_states:
-                    state_events.append(event)
-            
-            if len(events) < page_size:
-                break  # Last page reached
-            
-            offset += len(events)
-        
-        return state_events[:limit]  # Trim to the requested limit
+        for event_id in event_ids:
+            url = f"https://gamma-api.polymarket.com/events/{event_id}"
+            try:
+                response = requests.get(url)
+                response.raise_for_status()  # Raise an error for bad status codes
+                event = response.json()
+                state_events.append(event)
+                print(f"Successfully fetched event {event_id}")
+            except requests.exceptions.HTTPError as http_err:
+                print(f"HTTP error occurred for event {event_id}: {http_err}")
+            except Exception as err:
+                print(f"Other error occurred for event {event_id}: {err}")
+        print(f"Total events fetched: {len(state_events)}")
+        return state_events
 
     def extract_state_name(full_name):
-        # Remove "Presidential Election Winner" from the end
+        # Clean and extract the state name from the event title
         name = full_name.replace("Will a Republican win", "")
         name = name.replace("US Presidential Election?", "")
-
         name = name.replace("Presidential Election?", "")
         name = name.replace("in the 2024", "")
         name = name.replace("?", "")
-        if '2' in name:
+        
+        # Handle congressional districts
+        if '2nd congressional district' in name:
             name = name.replace('2nd congressional district', "(2)")
             name = name.replace("'s", "")
-        if '3' in name:
+        if '3rd congressional district' in name:
             name = name.replace('3rd congressional district', "(3)")
             name = name.replace("'s", "")
-
-        if '1' in name:
+        if '1st congressional district' in name:
             name = name.replace('1st congressional district', "(1)")
             name = name.replace("'s", "")
-
+        
         return name.strip()
 
-    # Fetch events
-    events = get_all_events(all_56_states,limit)
-
-    # Process events
-    state_events = {}
-    for event in events:
-        #if 'Presidential Election Winner' in event['title']:
-        state_events[event['id']] = event
+    # Fetch events using specific event IDs
+    events = get_all_events(all_56_states)
+    
+    # Process events into a dictionary for easier access
+    state_events = {event['id']: event for event in events}
 
     hold_republican_odds = {}
     for event in state_events.values():
-        for market in event['markets']:
-            if 'Republican' in market['question']:
-                hold_republican_odds[market['question']] = market['outcomePrices']
+        for market in event.get('markets', []):
+            question = market.get('question', '')
+            if 'Republican' in question:
+                hold_republican_odds[question] = market.get('outcomePrices', '{}')
 
-    processed_data = {key: ast.literal_eval(value)[0] for key, value in hold_republican_odds.items()}
+    # Safely evaluate the outcomePrices string to a dictionary or list and extract the first price
+    processed_data = {}
+    for question, prices_str in hold_republican_odds.items():
+        try:
+            # Attempt to evaluate the string
+            prices_data = ast.literal_eval(prices_str)
+            
+            # Handle if prices_data is a dict
+            if isinstance(prices_data, dict):
+                if prices_data:
+                    first_price = list(prices_data.values())[0]
+                else:
+                    print(f"No prices available for question '{question}'.")
+                    continue  # Skip if dict is empty
+            # Handle if prices_data is a list
+            elif isinstance(prices_data, list):
+                if prices_data:
+                    first_price = prices_data[0]
+                else:
+                    print(f"No prices available for question '{question}'.")
+                    continue  # Skip if list is empty
+            else:
+                print(f"Unexpected data type for prices of question '{question}': {type(prices_data)}")
+                continue  # Skip unexpected data types
+            
+            # Assign the first price to processed_data
+            processed_data[question] = first_price
 
+        except (ValueError, SyntaxError) as e:
+            print(f"Error parsing prices for question '{question}': {e}")
+        except Exception as e:
+            print(f"Unexpected error for question '{question}': {e}")
+
+    # Create a DataFrame from the processed data
     df = pd.DataFrame(list(processed_data.items()), columns=['Question', 'Odds Yes'])
-    df['State'] = df['Question'].apply(lambda x: extract_state_name(x))
+    df['State'] = df['Question'].apply(extract_state_name)
 
+    # Clean the DataFrame
     df.drop(columns='Question', inplace=True)
-    current_odds = df[df['State'].str.contains('Will any other') == False]
-    current_odds.loc[:, 'Odds Yes'] = current_odds['Odds Yes'].astype(float)
+    current_odds = df[~df['State'].str.contains('Will any other')]
+    
+    # Convert 'Odds Yes' to float with error handling
+    try:
+        current_odds['Odds Yes'] = current_odds['Odds Yes'].astype(float)
+    except ValueError as e:
+        print(f"Error converting 'Odds Yes' to float: {e}")
+        # Optionally, handle or clean the data here
+        return  # Exit the function if conversion fails
+
+    print(f"Number of current odds entries: {len(current_odds)}")
+    
+    # Check if all 56 states have been processed
     if len(current_odds) == 56:
-        # Retry logic in case of database lock
+        #print(current_odds)
         retries = 5
         while retries > 0:
             try:
-                # Connect to SQLite database using a context manager
                 with sqlite3.connect('presidentigami.db', timeout=10) as conn:
                     cursor = conn.cursor()
 
-                    # Create the current_odds table if it doesn't exist
+                    # Create the table if it doesn't exist
                     cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS current_odds (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        State TEXT,
-                        Odds DECIMAL(12,6)
-                    )
+                        CREATE TABLE IF NOT EXISTS current_odds (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            State TEXT,
+                            Odds DECIMAL(12,6)
+                        )
                     ''')
 
-                    # Step 1: Delete existing data in the table
+                    # Clear existing data
                     cursor.execute('DELETE FROM current_odds')
 
-                    # Step 2: Insert new data from the DataFrame using executemany()
+                    # Insert new data
+                    data_to_insert = current_odds[['State', 'Odds Yes']].values.tolist()
                     cursor.executemany('''
-                    INSERT INTO current_odds (State, Odds)
-                    VALUES (?, ?)
-                    ''', current_odds[['State', 'Odds Yes']].values.tolist())
+                        INSERT INTO current_odds (State, Odds)
+                        VALUES (?, ?)
+                    ''', data_to_insert)
 
-                    # Step 3: Commit the transaction to save changes
+                    # Commit the transaction
                     conn.commit()
 
                     print("Data deleted and new data inserted successfully.")
-
-                # Break out of the loop if everything succeeded
-                break
-
+                break  # Exit the retry loop on success
             except sqlite3.OperationalError as e:
                 if "locked" in str(e).lower():
                     print("Database is locked, retrying...")
                     retries -= 1
-                    time.sleep(2)  # wait before retrying
+                    time.sleep(2)  # Wait before retrying
                 else:
-                    # If it's another type of operational error, raise it
-                    raise
+                    raise  # Re-raise if it's a different operational error
 
         if retries == 0:
             print("Failed to update database after multiple attempts due to locking issues.")
-
-        # Continue with the next step
-        upload_odds_snapshot(current_odds)
-    else:
-        print("Data not updated")
+        else:
+            print("Database updated successfully.")
+            upload_odds_snapshot(current_odds)
