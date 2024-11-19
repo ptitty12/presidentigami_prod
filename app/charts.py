@@ -60,8 +60,9 @@ def create_line_chart():
     # Sort the DataFrame by 'Snapshot'
     df = df.sort_values(by='Snapshot')
     
-    # Calculate the date two days ago
-    two_days_ago = datetime.now() - timedelta(days=2)
+    
+    # Set fixed date to November 6th, 2024
+    two_days_ago = datetime(2024, 11, 6)
     
     # Filter the DataFrame to only include data from the last two days
     df = df[df['Snapshot'] >= two_days_ago]
