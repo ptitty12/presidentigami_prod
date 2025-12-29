@@ -30,4 +30,4 @@ COPY . .
 # If you have a factory pattern, adjust accordingly.
 # Common patterns: "app:app", "run:app", "wsgi:app"
 ENV PORT=8000
-CMD ["gunicorn", "--workers", "3", "--bind", "0.0.0.0:8000", "app:app"]
+CMD ["gunicorn", "--workers", "3", "--bind", "0.0.0.0:8000", "run:app"]
